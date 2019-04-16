@@ -14,7 +14,7 @@ public class Main {
     public static void main(String[] args) {
         int role;
         try {
-            role = Integer.parseInt(getInput("Type 0 for client, 1 for server: "));
+            role = Integer.parseInt(getInput("Type 0 for server, 1 for client: "));
         } catch (NumberFormatException e) {
             //server by default
             role = 0;
