@@ -19,6 +19,7 @@ public class Server  /* implements WebcamMotionListener*/ {
     private ArrayList<Client> clients;
     private DatagramSocket socket;
     private float imageQuality = 0.5f;
+    boolean cameraOpen;
 
 
     public Server(int port, int maxClients) throws SocketException {
@@ -34,6 +35,8 @@ public class Server  /* implements WebcamMotionListener*/ {
     private void initializeWebcam() {
         webcam = Webcam.getDefault();
         webcam.setViewSize(WebcamResolution.VGA.getSize());
+
+        cameraOpen = true;
 
         //this code here essentially just creates a window that displays current webcam view
         WebcamPanel panel = new WebcamPanel(webcam);
@@ -56,7 +59,7 @@ public class Server  /* implements WebcamMotionListener*/ {
         //and also to listen for clients who wish to terminate their connection when they want to stop watching feed
         //listenForConnections();
 
-        while (true) {
+        while (cameraOpen) {
             byte [] image = captureImage();
 
             //send image to all clients
@@ -107,7 +110,12 @@ public class Server  /* implements WebcamMotionListener*/ {
 
             jpgWriteParam.setCompressionQuality(imageQuality);
             jpgWriter.setOutput(outputStream);
-            jpgWriter.write(null, new IIOImage(image, null, null), jpgWriteParam);
+            try {
+                jpgWriter.write(null, new IIOImage(image, null, null), jpgWriteParam);
+            } catch (IllegalArgumentException e) {
+                cameraOpen = false;
+                System.out.println("Camera closed... ");
+            }
             jpgWriter.dispose();
 
             byte[] compressedImage = baos.toByteArray();
