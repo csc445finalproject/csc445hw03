@@ -1,0 +1,9 @@
+.idea/
+csc445hw03.iml
+target/*
+.DS_Store
+bin
+.project
+.classpath
+.settings
+.vscode
