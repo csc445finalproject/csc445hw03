@@ -38,7 +38,11 @@ public class Main {
             } catch (SocketException e) {
                 System.out.println("Socket exception for server");
                 e.printStackTrace();
+            } catch (Exception e) {
+                //yes I know this is garbage...
+                System.out.println("Webcam closed");
             }
+
 
 
         //we are client

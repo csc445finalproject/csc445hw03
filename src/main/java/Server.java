@@ -13,12 +13,12 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
 
-public class Server  /* implements WebcamMotionListener*/ {
+public class Server {
 
     private Webcam webcam;
     private ArrayList<Client> clients;
     private DatagramSocket socket;
-    private float imageQuality = 0.5f;
+    private float imageQuality = 0.99f;
     boolean cameraOpen;
 
 
@@ -59,30 +59,18 @@ public class Server  /* implements WebcamMotionListener*/ {
         //and also to listen for clients who wish to terminate their connection when they want to stop watching feed
         //listenForConnections();
 
-        WebcamStreamer stream = new WebcamStreamer(Main.port, Webcam.getDefault(), 24, true);
+        while (cameraOpen) {
+            byte [] image = captureImage();
 
-        do {
+            //send image to all clients
+            sendImage(image);
+
             try {
-                Thread.sleep(200);
+                Thread.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } while (true);
-
-
-
-//        while (cameraOpen) {
-//            byte [] image = captureImage();
-//
-//            //send image to all clients
-//            sendImage(image);
-//
-//            try {
-//                Thread.sleep(10);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        }
 
         //tell clients there is no more stream
 
@@ -117,54 +105,14 @@ public class Server  /* implements WebcamMotionListener*/ {
 
     //return compressed byte [] representation of the webcam view
     private byte [] captureImage(){
-        try {
 
             long start = System.nanoTime();
-
-            BufferedImage image = webcam.getImage();
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageOutputStream outputStream = ImageIO.createImageOutputStream(baos);
-
-            ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("jpg").next();
-
-            ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
-            jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-
-            jpgWriteParam.setCompressionQuality(imageQuality);
-            jpgWriter.setOutput(outputStream);
-            try {
-                jpgWriter.write(null, new IIOImage(image, null, null), jpgWriteParam);
-            } catch (IllegalArgumentException e) {
-                cameraOpen = false;
-                System.out.println("Camera closed... ");
-                tellClientsClosed();
-                return null;
-            }
-            jpgWriter.dispose();
-
-            byte[] compressedImage = baos.toByteArray();
-
-            long total = System.nanoTime() -start;
-
-            System.out.println("Long Total time in ns: "+  total + " in ms : " + (total/1000000));
-
-
-            start = System.nanoTime();
             byte [] test = WebcamUtils.getImageBytes(webcam, "jpg");
-            total = System.nanoTime() -start;
+            long total = System.nanoTime() - start;
 
             System.out.println("Test Total time in ns: "+  total + " in ms : " + (total/1000000));
 
-            return compressedImage;
-
-
-        } catch (IOException e) {
-            System.out.println("Cannot write file");
-            return null;
-        }
-
-
+            return test;
     }
 
 
