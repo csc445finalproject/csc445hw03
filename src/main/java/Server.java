@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import com.github.sarxos.webcam.util.ImageUtils;
 
 public class Server {
 
@@ -107,7 +108,7 @@ public class Server {
     private byte [] captureImage(){
 
             long start = System.nanoTime();
-            byte [] test = WebcamUtils.getImageBytes(webcam, "jpg");
+            byte [] test = WebcamUtils.getImageBytes(webcam, ImageUtils.FORMAT_JPG);
             long total = System.nanoTime() - start;
 
             System.out.println("Test Total time in ns: "+  total + " in ms : " + (total/1000000));
