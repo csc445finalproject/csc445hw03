@@ -8,7 +8,15 @@
     <artifactId>csc445hw03</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <repositories>
 
+
+        <repository>
+            <id>dcm4che repository</id>
+            <url>http://www.dcm4che.org/maven2/</url>
+        </repository>
+
+    </repositories>
 
 
     <dependencies>
@@ -38,7 +46,16 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>xuggle</groupId>
+            <artifactId>xuggle-xuggler</artifactId>
+            <version>5.4</version>
+        </dependency>
+
+
     </dependencies>
+
+
 
 
 </project>

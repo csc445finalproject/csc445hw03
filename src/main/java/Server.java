@@ -59,19 +59,34 @@ public class Server  /* implements WebcamMotionListener*/ {
         //and also to listen for clients who wish to terminate their connection when they want to stop watching feed
         //listenForConnections();
 
-        while (cameraOpen) {
-            byte [] image = captureImage();
+        WebcamStreamer stream = new WebcamStreamer(Main.port, Webcam.getDefault(), 24, true);
 
-            //send image to all clients
-            sendImage(image);
-
+        do {
             try {
-                Thread.sleep(50);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        } while (true);
 
-        }
+
+
+//        while (cameraOpen) {
+//            byte [] image = captureImage();
+//
+//            //send image to all clients
+//            sendImage(image);
+//
+//            try {
+//                Thread.sleep(10);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+
+        //tell clients there is no more stream
+
+
     }
 
 
@@ -94,10 +109,18 @@ public class Server  /* implements WebcamMotionListener*/ {
 
     }
 
+    private void tellClientsClosed() {
+
+
+    }
+
 
     //return compressed byte [] representation of the webcam view
     private byte [] captureImage(){
         try {
+
+            long start = System.nanoTime();
+
             BufferedImage image = webcam.getImage();
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -115,10 +138,23 @@ public class Server  /* implements WebcamMotionListener*/ {
             } catch (IllegalArgumentException e) {
                 cameraOpen = false;
                 System.out.println("Camera closed... ");
+                tellClientsClosed();
+                return null;
             }
             jpgWriter.dispose();
 
             byte[] compressedImage = baos.toByteArray();
+
+            long total = System.nanoTime() -start;
+
+            System.out.println("Long Total time in ns: "+  total + " in ms : " + (total/1000000));
+
+
+            start = System.nanoTime();
+            byte [] test = WebcamUtils.getImageBytes(webcam, "jpg");
+            total = System.nanoTime() -start;
+
+            System.out.println("Test Total time in ns: "+  total + " in ms : " + (total/1000000));
 
             return compressedImage;
 
@@ -130,6 +166,8 @@ public class Server  /* implements WebcamMotionListener*/ {
 
 
     }
+
+
 
 
 
