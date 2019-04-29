@@ -4,33 +4,81 @@ import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.net.*;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import com.github.sarxos.webcam.util.ImageUtils;
+
 
 public class Server {
 
+    private final String multicastAddress = "230.12.69.12";
+    private final float imageQuality = 0.5f;
     private Webcam webcam;
-    private ArrayList<Client> clients;
+    private InetAddress group;
+    private int port;
     private DatagramSocket socket;
-    private float imageQuality = 0.99f;
-    boolean cameraOpen;
+    private boolean cameraOpen;
+
+    private ImageWriter writer;
+    private ImageWriteParam jpgWriteParam;
+
+    private final int fps = 24;
+    //here 1000ms
+    private final int frameFireRate = 1000/fps;
+
+    final ScheduledThreadPoolExecutor scheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
+    ScheduledFuture<?> videoHandler;
 
 
-    public Server(int port, int maxClients) throws SocketException {
-        socket = new DatagramSocket(port);
+    public Server(int port) throws SocketException {
+        this.port = port;
+        socket = new DatagramSocket();
 
+        try {
+            group = InetAddress.getByName(multicastAddress);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+
+        setCompressionLevel();
         initializeWebcam();
         startStream();
     }
 
+    class WebcamSender implements Runnable {
 
+        public void run() {
+            try {
+                sendImage(captureImage());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+
+    private void setCompressionLevel() {
+        JPEGImageWriteParam jpegParams = new JPEGImageWriteParam(null);
+        jpegParams.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        jpegParams.setCompressionQuality(0.5f);
+        writer = ImageIO.getImageWritersByFormatName("jpg").next();
+        jpgWriteParam = writer.getDefaultWriteParam();
+        jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        jpgWriteParam.setCompressionQuality(imageQuality);
+    }
 
 
     private void initializeWebcam() {
@@ -60,21 +108,22 @@ public class Server {
         //and also to listen for clients who wish to terminate their connection when they want to stop watching feed
         //listenForConnections();
 
-        while (cameraOpen) {
-            byte [] image = captureImage();
+        //while (cameraOpen) {
 
-            //send image to all clients
-            sendImage(image);
+            videoHandler = scheduler.scheduleAtFixedRate(new WebcamSender(), 0,frameFireRate, TimeUnit.MILLISECONDS);
 
+
+//            //keep camera open a
             try {
-                Thread.sleep(1);
+                System.out.println("Getting ready to take pictures");
+                Thread.sleep(1000000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        //}
 
         //tell clients there is no more stream
-
+        tellClientsClosed();
 
     }
 
@@ -84,7 +133,7 @@ public class Server {
         //listen for connections, and add them to the list of clients
         //also listen for clients who want to disconnect
         //we could design packets such that 1 is wanting to connect, and 0 is wanting to disconnect
-        //only allow maxClients connections
+
 
 
 
@@ -92,29 +141,58 @@ public class Server {
 
 
 
-    private void sendImage(byte[] image) {
+    private void sendImage(byte[] image) throws IOException {
         //send the image to all the clients who are connected
-
+        socket.send(new DatagramPacket(image, image.length, group, port));
 
     }
 
     private void tellClientsClosed() {
 
+        //TODO: send some sort of escape sequence to multicast socket signaling that the broadcast is over
+        webcam.close();
 
     }
 
 
     //return compressed byte [] representation of the webcam view
-    private byte [] captureImage(){
+    private byte [] captureImage() throws IOException {
 
-            long start = System.nanoTime();
-            byte [] test = WebcamUtils.getImageBytes(webcam, ImageUtils.FORMAT_JPG);
-            long total = System.nanoTime() - start;
+        BufferedImage image = webcam.getImage();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageOutputStream outputStream = ImageIO.createImageOutputStream(baos);
+        writer.setOutput(outputStream);
+        writer.write(null, new IIOImage(image, null,null), jpgWriteParam);
+        byte [] compressedImg = baos.toByteArray();
+        System.out.println("Took image");
 
-            System.out.println("Test Total time in ns: "+  total + " in ms : " + (total/1000000));
 
-            return test;
+
+        return compressedImg;
+
+
+        /*
+
+        alternatively, this makes images of higher quality, but far bigger.
+        Not sure which is faster
+
+
+        BufferedImage image = webcam.getImage();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "JPG", baos);
+        byte[] data = baos.toByteArray();
+
+
+        or even
+
+        byte [] bytes = webcam.getImageBytes();
+
+        but again, images are big, so speed could be issue here
+
+         */
     }
+
+
 
 
 

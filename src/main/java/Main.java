@@ -31,10 +31,9 @@ public class Main {
                 e.printStackTrace();
             }
 
-            int maxClients = Integer.parseInt(getInput("Enter max number of clients: "));
 
             try {
-                Server server = new Server(port, maxClients);
+                Server server = new Server(port);
             } catch (SocketException e) {
                 System.out.println("Socket exception for server");
                 e.printStackTrace();
