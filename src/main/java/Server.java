@@ -20,13 +20,11 @@ import java.util.concurrent.TimeUnit;
 import com.github.sarxos.webcam.util.ImageUtils;
 
 
-public class Server {
+public class Server implements WebcamListener{
 
-    private final String multicastAddress = "230.12.69.12";
     private final float imageQuality = 0.5f;
     private Webcam webcam;
     private InetAddress group;
-    private int port;
     private DatagramSocket socket;
     private boolean cameraOpen;
 
@@ -41,20 +39,34 @@ public class Server {
     ScheduledFuture<?> videoHandler;
 
 
-    public Server(int port) throws SocketException {
-        this.port = port;
+    public Server() throws SocketException {
         socket = new DatagramSocket();
 
         try {
-            group = InetAddress.getByName(multicastAddress);
+            group = InetAddress.getByName(Constants.IP_MULTICAST);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
 
-
         setCompressionLevel();
         initializeWebcam();
         startStream();
+    }
+
+    public void webcamOpen(WebcamEvent webcamEvent) {
+
+    }
+
+    public void webcamClosed(WebcamEvent webcamEvent) {
+
+    }
+
+    public void webcamDisposed(WebcamEvent webcamEvent) {
+
+    }
+
+    public void webcamImageObtained(WebcamEvent webcamEvent) {
+
     }
 
     class WebcamSender implements Runnable {
@@ -104,23 +116,13 @@ public class Server {
 
     private void startStream() {
 
-        //start a thread here to receive connections
-        //and also to listen for clients who wish to terminate their connection when they want to stop watching feed
-        //listenForConnections();
-
-        //while (cameraOpen) {
-
-            videoHandler = scheduler.scheduleAtFixedRate(new WebcamSender(), 0,frameFireRate, TimeUnit.MILLISECONDS);
+        //send messages at a fixed rate
+        videoHandler = scheduler.scheduleAtFixedRate(new WebcamSender(), 0,frameFireRate, TimeUnit.MILLISECONDS);
 
 
-//            //keep camera open a
-            try {
-                System.out.println("Getting ready to take pictures");
-                Thread.sleep(1000000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        //}
+        while (cameraOpen) {
+            //wait for camera to close
+        }
 
         //tell clients there is no more stream
         tellClientsClosed();
@@ -129,21 +131,11 @@ public class Server {
 
 
 
-    private void listenForConnections() {
-        //listen for connections, and add them to the list of clients
-        //also listen for clients who want to disconnect
-        //we could design packets such that 1 is wanting to connect, and 0 is wanting to disconnect
-
-
-
-
-    }
-
 
 
     private void sendImage(byte[] image) throws IOException {
         //send the image to all the clients who are connected
-        socket.send(new DatagramPacket(image, image.length, group, port));
+        socket.send(new DatagramPacket(image, image.length, group, Constants.PORT));
 
     }
 
@@ -151,6 +143,8 @@ public class Server {
 
         //TODO: send some sort of escape sequence to multicast socket signaling that the broadcast is over
         webcam.close();
+
+        System.out.println("Closing feed");
 
     }
 

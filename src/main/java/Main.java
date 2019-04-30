@@ -1,17 +1,18 @@
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
+
+
 public class Main {
 
 
-    static int port = 2689;
-
-
     public static void main(String[] args) {
+
         int role;
         try {
             role = Integer.parseInt(getInput("Type 0 for server, 1 for client: "));
@@ -25,15 +26,7 @@ public class Main {
         if (role == 0) {
 
             try {
-                System.out.println(printExternalIP());
-            } catch (UnknownHostException e) {
-                System.out.println("Cannot get external IP...");
-                e.printStackTrace();
-            }
-
-
-            try {
-                Server server = new Server(port);
+                Server server = new Server();
             } catch (SocketException e) {
                 System.out.println("Socket exception for server");
                 e.printStackTrace();
@@ -48,10 +41,9 @@ public class Main {
         } else if (role == 1) {
 
             try {
-                Client client = new Client(port);
-                String serverIp = getInput("Enter the server IP address");
-                client.connectToHost(serverIp);
-            } catch (SocketException e) {
+                Client client = new Client();
+
+            }catch (IOException e) {
                 e.printStackTrace();
             }
 
