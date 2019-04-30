@@ -18,7 +18,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 import com.github.sarxos.webcam.util.ImageUtils;
 
 
@@ -41,11 +40,22 @@ public class Server implements WebcamListener{
     ScheduledFuture<?> videoHandler;
 
 
-    public Server() throws SocketException {
+    public Server(String ip) throws SocketException {
         socket = new DatagramSocket();
 
         try {
-            group = InetAddress.getByName(Constants.IP_MULTICAST);
+
+            if (ip.equals("multicast")) {
+                //if we want multicast, send right to the multicast socket
+                System.out.println("Directly multicasting");
+                group = InetAddress.getByName(Constants.IP_MULTICAST);
+            } else {
+                // if an IP address is entered (in our case, pi or rho or whatever server we choose)
+                // then we forward everything there, and let them handle the multicast
+                System.out.println("Sending to " + ip + " and letting them handle the multicast");
+                group = InetAddress.getByName(ip);
+            }
+
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }

@@ -11,6 +11,7 @@ public class MulticastClient {
         socket = new MulticastSocket(Constants.PORT);
         InetAddress group = InetAddress.getByName(Constants.IP_MULTICAST);
         socket.joinGroup(group);
+        socket.setTimeToLive(25);
 
         for(;;){
             // keep client listening, until either the client wants to terminate or host dies

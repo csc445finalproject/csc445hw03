@@ -25,8 +25,10 @@ public class Main {
         //we are server
         if (role == 0) {
 
+            String name = getInput("Type server IP address: ");
+
             try {
-                Server server = new Server();
+                Server server = new Server(name);
             } catch (SocketException e) {
                 System.out.println("Socket exception for server");
                 e.printStackTrace();

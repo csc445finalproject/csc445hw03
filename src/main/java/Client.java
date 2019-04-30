@@ -3,8 +3,6 @@ import java.net.*;
 
 public class Client {
 
-
-
     private MulticastSocket socket;
 
 
