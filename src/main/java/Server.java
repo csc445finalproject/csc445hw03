@@ -8,7 +8,9 @@ import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
@@ -22,7 +24,7 @@ import com.github.sarxos.webcam.util.ImageUtils;
 
 public class Server implements WebcamListener{
 
-    private final float imageQuality = 0.5f;
+    private final float imageQuality = 0.01f;
     private Webcam webcam;
     private InetAddress group;
     private DatagramSocket socket;
@@ -161,6 +163,12 @@ public class Server implements WebcamListener{
         System.out.println("Took image");
 
 
+        //uncomment this to see what image actually looks like
+
+//        ByteArrayInputStream bis = new ByteArrayInputStream(compressedImg);
+//        BufferedImage bImage2 = ImageIO.read(bis);
+//        ImageIO.write(bImage2, "jpg", new File("output.jpg") );
+
 
         return compressedImg;
 
@@ -184,6 +192,7 @@ public class Server implements WebcamListener{
         but again, images are big, so speed could be issue here
 
          */
+
     }
 
 

@@ -24,6 +24,7 @@ public class Client {
     void connectToHost() throws IOException {
         //connect to connectionIP
         socket = new MulticastSocket(Constants.PORT);
+        socket.setTimeToLive(25);
         InetAddress group = InetAddress.getByName(Constants.IP_MULTICAST);
         socket.joinGroup(group);
         System.out.println("waiting for a video feed...");
