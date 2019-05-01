@@ -54,6 +54,7 @@ public class Server implements WebcamListener{
                 // then we forward everything there, and let them handle the multicast
                 System.out.println("Sending to " + ip + " and letting them handle the multicast");
                 group = InetAddress.getByName(ip);
+                // I think in this case, we pass to a new class
             }
 
         } catch (UnknownHostException e) {
