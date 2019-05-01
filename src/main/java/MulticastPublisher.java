@@ -18,6 +18,7 @@ public class MulticastPublisher {
         byte [] messageBytes;
         for (;;) {
             inputSocket.receive(incPacket);
+            System.out.println("Packet Received, sending now");
             // For now the publisher only sends one message at a time, client listens as long as he wants
             // probably want gui to handle things like leaving the group and invoking a method for this
             messageBytes = incPacket.getData();
