@@ -84,6 +84,8 @@ public class Client extends JPanel{
     void displayVideo(byte [] currentImageBytes) {
         //figure out how to display video
         System.out.println("updating GUI");
+        imageIcon = new ImageIcon(currentImageBytes);
+        imageLabel.setIcon(imageIcon);
 
     }
 
