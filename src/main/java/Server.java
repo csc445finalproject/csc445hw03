@@ -1,5 +1,4 @@
 import com.github.sarxos.webcam.*;
-
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
