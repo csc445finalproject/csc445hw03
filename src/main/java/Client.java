@@ -1,4 +1,6 @@
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
@@ -11,9 +13,19 @@ public class Client extends JPanel{
 
     JFrame frame;
     JPanel panel;
+
     JLabel imageLabel;
     BufferedImage image;
     ImageIcon imageIcon;
+
+
+    JLabel ipLabel;
+    JTextField ipTextField;
+
+    JLabel passwordLabel;
+    JTextField passwordField;
+
+    JButton connectButton;
 
     private MulticastSocket socket;
     private byte [] imageBytes;
@@ -22,19 +34,8 @@ public class Client extends JPanel{
 
     public Client() throws IOException {
 
-        System.out.println("Enter ip address");
-        String ip = ((new Scanner(System.in)).nextLine());
-
         initializeGUI();
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-
-        dummyStream(ip);
 
 
 //        connectToHost();
@@ -48,14 +49,51 @@ public class Client extends JPanel{
         image = ImageIO.read(new File("pep.jpg"));
         imageIcon = new ImageIcon(image);
         imageLabel.setIcon(imageIcon);
+        ipLabel = new JLabel("Host IP Address: ");
+        ipTextField = new JTextField();
+        ipLabel.setLabelFor(ipTextField);
 
-        frame.setLayout(new FlowLayout());
+        passwordLabel = new JLabel("Room password: ");
+        passwordField = new JTextField();
+        passwordLabel.setLabelFor(passwordField);
 
+
+
+        connectButton = new JButton("Connect");
+
+
+
+
+        //make all componants stack vertically
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+
+        //add the image
         panel.add(imageLabel);
+        //add label and fields for ip and passwords
+        panel.add(ipLabel);
+        panel.add(ipTextField);
+        panel.add(passwordLabel);
+        panel.add(passwordField);
+        panel.add(connectButton);
+
         frame.add(panel);
         frame.setVisible(true);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+
+        connectButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Connecting button pressed");
+                System.out.println("Ip: " + ipTextField.getText() + " Password: " + passwordField.getText());
+                try {
+                    dummyStream(ipTextField.getText());
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
 
     }
 
