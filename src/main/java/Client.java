@@ -45,7 +45,7 @@ public class Client extends JPanel{
         frame = new JFrame("csc445hw03");
         panel = new JPanel();
         imageLabel = new JLabel();
-        image = ImageIO.read(new File("c.jpg"));
+        image = ImageIO.read(new File("pep.jpg"));
         imageIcon = new ImageIcon(image);
         imageLabel.setIcon(imageIcon);
 
@@ -89,7 +89,6 @@ public class Client extends JPanel{
 
     void updateDisplay(byte [] currentImageBytes) {
         //figure out how to display video
-        System.out.println("updating GUI");
         imageIcon = new ImageIcon(currentImageBytes);
         imageLabel.setIcon(imageIcon);
     }
@@ -126,7 +125,10 @@ public class Client extends JPanel{
         //this will use tcp just because its easier (as we dont have sliding windows setup yet)
         //so basically just receive a packet, and have dummy Update gui change the GUI
         imageBytes = new byte [Constants.BIG_TEST_BUFFER];
-        in.read(imageBytes);
+        int count = in.read(imageBytes);
+        System.arraycopy(imageBytes,0,imageBytes,0,count);
+        System.out.println("Received " + count + " bytes");
+
         return imageBytes;
     }
 
