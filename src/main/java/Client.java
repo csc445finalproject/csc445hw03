@@ -31,12 +31,18 @@ public class Client extends JPanel{
     private byte [] imageBytes;
     private InputStream in;
 
+    String ip;
+
+
 
     public Client() throws IOException {
 
+        System.out.println("Enter Ip Address: " );
+        ip = (new Scanner(System.in)).nextLine();
+
+
         initializeGUI();
-
-
+        dummyStream(ip);
 
 //        connectToHost();
 //        receiveVideoFeed();
@@ -60,7 +66,18 @@ public class Client extends JPanel{
 
 
         connectButton = new JButton("Connect");
-
+//        connectButton.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                System.out.println("Connecting button pressed");
+//                System.out.println("Ip: " + ipTextField.getText() + " Password: " + passwordField.getText());
+//                try {
+//                    dummyStream(ipTextField.getText());
+//                } catch (IOException e1) {
+//                    e1.printStackTrace();
+//                }
+//            }
+//        });
 
 
 
@@ -81,19 +98,6 @@ public class Client extends JPanel{
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-
-        connectButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Connecting button pressed");
-                System.out.println("Ip: " + ipTextField.getText() + " Password: " + passwordField.getText());
-                try {
-                    dummyStream(ipTextField.getText());
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        });
 
     }
 

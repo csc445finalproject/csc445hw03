@@ -388,6 +388,13 @@ public class Server implements WebcamListener{
     }
 
 
+    /*
+
+     ALL THE CODE BELOW IS FOR A TEST STREAM USING TCP
+
+     */
+
+
 
 
     private void dummyStream() throws IOException {
@@ -427,7 +434,7 @@ public class Server implements WebcamListener{
             }
 
             try {
-                Thread.sleep(35);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
