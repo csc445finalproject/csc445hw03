@@ -7,10 +7,7 @@ import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
@@ -42,6 +39,15 @@ public class Server implements WebcamListener{
     public Server(String ip) throws SocketException {
         socket = new DatagramSocket();
 
+
+        if (ip.equals("testGui")) {
+            try {
+                dummyStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         try {
 
             if (ip.equals("multicast")) {
@@ -64,6 +70,8 @@ public class Server implements WebcamListener{
         initializeWebcam();
         startStream();
     }
+
+
 
     public void webcamOpen(WebcamEvent webcamEvent) {
 
@@ -208,7 +216,50 @@ public class Server implements WebcamListener{
 
 
 
+    private void dummyStream() throws IOException {
+        ServerSocket s = new ServerSocket(Constants.PORT);
+        Socket client = s.accept();
 
+        OutputStream out = client.getOutputStream();
+
+        sendPictures(out);
+
+    }
+
+
+    private void sendPictures(OutputStream out) throws IOException {
+
+        File pep1 = new File("pep.jpg");
+        byte [] bytesArray = new byte[(int) pep1.length()];
+        FileInputStream fis = new FileInputStream(pep1);
+        fis.read(bytesArray);
+
+
+        File pep2 = new File("pep2.jpg");
+        byte [] bytesArray2 = new byte[(int) pep2.length()];
+        FileInputStream fis2 = new FileInputStream(pep2);
+        fis2.read(bytesArray2);
+
+
+        //alternate sending the 2 images we have on file for testing purposess
+
+        for (int i = 0; ; i++) {
+            if ((i & 1) == 0 ) {
+                out.write(bytesArray);
+            } else {
+                out.write(bytesArray2);
+            }
+
+            try {
+                Thread.sleep(35);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+    }
 
 
 

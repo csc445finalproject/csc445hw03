@@ -1,10 +1,8 @@
-import com.github.sarxos.webcam.WebcamResolution;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
+import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -18,9 +16,14 @@ public class Client extends JPanel{
     ImageIcon imageIcon;
 
     private MulticastSocket socket;
+    private byte [] imageBytes;
+    private InputStream in;
 
 
     public Client() throws IOException {
+
+        System.out.println("Enter ip address");
+        String ip = ((new Scanner(System.in)).nextLine());
 
         initializeGUI();
 
@@ -30,9 +33,12 @@ public class Client extends JPanel{
             e.printStackTrace();
         }
 
-        dummyUpdateGUI();
-        connectToHost();
-        receiveVideoFeed();
+
+        dummyStream(ip);
+
+
+//        connectToHost();
+//        receiveVideoFeed();
     }
 
     public void initializeGUI() throws IOException {
@@ -56,7 +62,7 @@ public class Client extends JPanel{
     private void receiveVideoFeed() throws IOException {
 
         while (true) {
-            displayVideo(getVideoBytes());
+            updateDisplay(getVideoBytes());
         }
     }
 
@@ -81,13 +87,19 @@ public class Client extends JPanel{
         return videoBytes;
     }
 
-    void displayVideo(byte [] currentImageBytes) {
+    void updateDisplay(byte [] currentImageBytes) {
         //figure out how to display video
         System.out.println("updating GUI");
         imageIcon = new ImageIcon(currentImageBytes);
         imageLabel.setIcon(imageIcon);
-
     }
+
+
+
+
+
+
+
 
     void dummyUpdateGUI() throws IOException {
         for (int i =0; ; i++){
@@ -106,6 +118,29 @@ public class Client extends JPanel{
             }
 
             imageLabel.setIcon(imageIcon);
+        }
+    }
+
+
+    byte [] getDummyBytes() throws IOException {
+        //this will use tcp just because its easier (as we dont have sliding windows setup yet)
+        //so basically just receive a packet, and have dummy Update gui change the GUI
+        imageBytes = new byte [Constants.BIG_TEST_BUFFER];
+        in.read(imageBytes);
+        return imageBytes;
+    }
+
+
+    public void dummyStream(String ip) throws IOException {
+
+        Socket s = new Socket(ip, Constants.PORT);
+        in = s.getInputStream();
+        System.out.println("Connected to: " + ip);
+
+        while (true) {
+
+            updateDisplay(getDummyBytes());
+
         }
 
 
