@@ -128,7 +128,7 @@ public class Server implements WebcamListener{
         panel.setImageSizeDisplayed(true);
         panel.setMirrored(true);
 
-        JFrame window = new JFrame("Test webcam panel");
+        JFrame window = new JFrame("Test webcam panels");
         window.add(panel);
         window.setResizable(true);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -434,7 +434,7 @@ public class Server implements WebcamListener{
             }
 
             try {
-                Thread.sleep(500);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
