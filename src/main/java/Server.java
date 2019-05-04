@@ -53,7 +53,7 @@ public class Server implements WebcamListener{
 
         try {
 
-            if (ip.equals("multicast")) {
+            if (ip.equals("m")) {
                 //if we want multicast, send right to the multicast socket
                 System.out.println("Directly multicasting");
                 group = InetAddress.getByName(Constants.IP_MULTICAST);
