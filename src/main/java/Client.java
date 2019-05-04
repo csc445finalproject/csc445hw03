@@ -80,7 +80,8 @@ public class Client extends JPanel implements ActionListener {
         //make all componants stack vertically
         panels.setLayout(new BorderLayout());
         textPanel.setLayout(new BorderLayout());
-        imagePanel.setMinimumSize(new Dimension(300, 300));
+        imagePanel.setMinimumSize(new Dimension(500, 300));
+        imagePanel.setPreferredSize(new Dimension(500,300));
 
 
         //add the image
