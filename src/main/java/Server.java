@@ -328,9 +328,31 @@ public class Server implements WebcamListener{
 
 
     private void sendImage(byte[] image) throws IOException {
-        //send the image to all the clients who are connected
-        socket.send(new DatagramPacket(image, image.length, group, Constants.PORT));
+        int dataLeft = image.length;
+        short blockNumber = 0;
+        byte[] packetData = new byte[1026];
+        byte[] bnBytes;
+        do {
+            bnBytes = ByteBuffer.allocate(2).putShort(blockNumber).array();
+            packetData[0] = bnBytes[0];
+            packetData[1] = bnBytes[1];
 
+            System.arraycopy(image, blockNumber * 1024, packetData, 2, 1024);
+            socket.send(new DatagramPacket(packetData, 1026, group, Constants.PORT));
+            System.out.println("Packet sent");
+            dataLeft -= 1024;
+            ++blockNumber;
+        } while (dataLeft > 1024);
+
+        bnBytes = ByteBuffer.allocate(2).putShort(Short.MAX_VALUE).array();
+        packetData[0] = bnBytes[0];
+        packetData[1] = bnBytes[1];
+        packetData = new byte[dataLeft];
+        System.arraycopy(image, blockNumber * 1024, packetData, 0, dataLeft);
+        socket.send(new DatagramPacket(packetData, dataLeft, group, Constants.PORT));
+
+        //send the image to all the clients who are connected
+        //socket.send(new DatagramPacket(image, image.length, group, Constants.PORT));
     }
 
     private void tellClientsClosed() {

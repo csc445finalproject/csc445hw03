@@ -5,6 +5,9 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
@@ -102,7 +105,6 @@ public class Client extends JPanel implements ActionListener {
     }
 
     private void receiveVideoFeed() throws IOException, InvocationTargetException, InterruptedException {
-
         while (true) {
             updateDisplay(getVideoBytes());
         }
@@ -118,15 +120,61 @@ public class Client extends JPanel implements ActionListener {
         System.out.println("waiting for a video feed...");
     }
 
+    void connectToHost(String ip) throws IOException{
+        socket = new MulticastSocket(Constants.PORT);
+        socket.setTimeToLive(25);
+        InetAddress group = InetAddress.getByName(ip);
+        socket.joinGroup(group);
+        System.out.println("waiting for a video feed...");
+    }
+
 
     byte[] getVideoBytes() throws IOException {
+        DatagramPacket packet = new DatagramPacket(new byte[Constants.BUFFER_SIZE], Constants.BUFFER_SIZE);
+        ArrayList<DatagramPacket> packets = new ArrayList<DatagramPacket>();
+
+        while (true) {
+            socket.receive(packet);
+            packets.add(packet);
+
+            if (getBlockNumber(packet.getData()) == Short.MAX_VALUE)
+                break;
+
+        }
+
+        //sort packets by id
+        Collections.sort(packets, new Comparator<DatagramPacket>() {
+            @Override
+            public int compare(DatagramPacket datagramPacket, DatagramPacket t1) {
+                if (getBlockNumber(datagramPacket.getData()) < getBlockNumber(t1.getData()))
+                    return -1;
+                else if (getBlockNumber(datagramPacket.getData()) > getBlockNumber(t1.getData()))
+                    return 1;
+                else
+                    return 0;
+            }
+        });
+
+        byte [] frameBytes = new byte [(packets.get(packets.size()-1).getLength() + ((packets.size()-1) * 1024))];
+
+
+        for (DatagramPacket dp : packets){
+            System.arraycopy(dp.getData(), 2, frameBytes, getBlockNumber(dp.getData()) * 1024, 1024);
+        }
+
+
+
+        return frameBytes;
+
+        /*
         DatagramPacket packet = new DatagramPacket(new byte[Constants.BUFFER_SIZE], Constants.BUFFER_SIZE);
         socket.receive(packet);
         System.out.println("got some data");
         int numBytes = packet.getLength();
-        byte[] videoBytes = new byte[numBytes];
+        byte [] videoBytes = new byte[numBytes];
         System.arraycopy(packet.getData(), 0, videoBytes, 0, numBytes);
         return videoBytes;
+         */
     }
 
     void updateDisplay(byte[] currentImageBytes) throws InvocationTargetException, InterruptedException {
@@ -193,7 +241,12 @@ public class Client extends JPanel implements ActionListener {
                 @Override
                 public void run() {
                     try {
-                        dummyStream(ipTextField.getText());
+                        //Testing of gui on client side
+                        //dummyStream(ipTextField.getText());
+
+                        //Testing of client to host streaming
+                        connectToHost(ipTextField.getText());
+                        receiveVideoFeed();
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     } catch (InvocationTargetException e1) {
@@ -211,6 +264,10 @@ public class Client extends JPanel implements ActionListener {
         }
 
 
+    }
+
+    private short getBlockNumber(byte[] bytes) {
+        return (short) (((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff));
     }
 
 }
