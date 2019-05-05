@@ -1,5 +1,6 @@
 import Misc.Constants;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -24,14 +25,15 @@ public class ImagePacket {
             //sort everything first
             this.sort();
             int arrLength = ((imageChunks.size()-1) * Constants.BUFFER_SIZE) + (imageChunks.get(imageChunks.size()-1).data.length);
-            byte [] imageBytes = new byte [arrLength];
+            byte [] imageBytes;
+            ByteBuffer buffer = ByteBuffer.allocate(arrLength);
 
             //copy all bytes from the imageChunks into the total list of bytes
-            for (int i = 0; i<imageChunks.size(); i++) {
-                ImageChunk chunk = imageChunks.get(i);
-                System.arraycopy(chunk.data, 0, imageBytes, i* Constants.BUFFER_SIZE, chunk.data.length);
+            for (ImageChunk ic: imageChunks) {
+                buffer.put(ic.data);
             }
 
+            imageBytes = buffer.array();
             return imageBytes;
 
 
