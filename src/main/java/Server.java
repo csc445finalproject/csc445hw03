@@ -11,27 +11,26 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import com.github.sarxos.webcam.util.ImageUtils;
+
+import Misc.Constants;
 
 
-public class Server implements WebcamListener{
+public class Server {
 
     private final float imageQuality = 0.01f;
     private Webcam webcam;
     private InetAddress group;
     private DatagramSocket socket;
-    private static long currentEstimateRTT = 64;
     private boolean cameraOpen;
 
     private ImageWriter writer;
     private ImageWriteParam jpgWriteParam;
 
-    private final int fps = 24;
+    private final int fps = 18;
     //here 1000ms
     private final int frameFireRate = 1000/fps;
 
@@ -40,16 +39,9 @@ public class Server implements WebcamListener{
 
 
     public Server(String ip) throws SocketException {
+
+
         socket = new DatagramSocket();
-
-
-        if (ip.equals("testGui")) {
-            try {
-                dummyStream();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
 
         try {
 
@@ -75,22 +67,6 @@ public class Server implements WebcamListener{
     }
 
 
-
-    public void webcamOpen(WebcamEvent webcamEvent) {
-
-    }
-
-    public void webcamClosed(WebcamEvent webcamEvent) {
-
-    }
-
-    public void webcamDisposed(WebcamEvent webcamEvent) {
-
-    }
-
-    public void webcamImageObtained(WebcamEvent webcamEvent) {
-
-    }
 
     class WebcamSender implements Runnable {
 
@@ -152,177 +128,6 @@ public class Server implements WebcamListener{
 
     }
 
-//    void sendFileWindowed(final int numPackets, final byte [] fileBytes) throws IOException{
-//        int windowSize = calculateWindowSize(numPackets); // calculates initial window size with a max of 32
-//
-//        DatagramPacket dataPacket;
-//        byte[] dataBytes = new byte[Constants.BUFFER_SIZE];
-//        ByteBuffer buffer = ByteBuffer.wrap(fileBytes); // put file bytes in bytebuffer
-//        ByteBuffer packetBuffer;
-//        short seqNum = 1, startingSeqNum = 1; // starting seqnum is the initial window position
-//        // seqnum is current seqnum to be sent
-//        byte opCode = 3; // opcode for datapacket
-//        byte finalWindowByte; // final windowbyte is a hack on the first byte of the datapacket
-//        // = 1 if its the last packet in the window, so the server knows to send an ack
-//        // = 0 if its not the last packet in the window, so the server shouldn't send anything
-//        int remaining, remainingPackets; // remaining is for bytes in file, remainingPackets is for total packets left to send
-//        long start, end; // start, end for calculating reasonable timeouts.
-//        remainingPackets = numPackets;
-//
-//        /*
-//         Iterate over the number of packets, and through the current window size until there are none left
-//         send packets = to the current window size, and then receive an ack
-//         if ack.seqnum < seqNum, move buffer and everything else to ack.seqnum, then start the new window at that point
-//         */
-//
-//        // TODO: make packet objects so that OPCODE and SEQ_NUM actually have references, and figure out what to do with acks
-//        while (remainingPackets != 0) {
-//            start = System.currentTimeMillis();
-//            for (int i = 0; i < windowSize; i++) {
-//                if (i == windowSize - 1){
-//                    finalWindowByte = 1;
-//                } else {
-//                    finalWindowByte = 0;
-//                }
-//                remaining = buffer.remaining();
-//                if (seqNum == numPackets) {
-//                    // final packet
-//                    byte[] remain = new byte[remaining];
-//                    buffer.get(remain);
-//                    packetBuffer = ByteBuffer.allocate(remaining + OPCODE + SEQ_NUM);
-//                    packetBuffer.put(finalWindowByte);
-//                    packetBuffer.put(opCode);
-//                    packetBuffer.putShort(seqNum);
-//                    packetBuffer.put(remain);
-//                } else {
-//                    packetBuffer = ByteBuffer.allocate(Constants.BUFFER_SIZE + OPCODE + SEQ_NUM);
-//                    buffer.get(dataBytes);
-//                    packetBuffer.put(finalWindowByte);
-//                    packetBuffer.put(opCode);
-//                    packetBuffer.putShort(seqNum);
-//                    packetBuffer.put(dataBytes);
-//                }
-//                byte[] packetBytes = packetBuffer.array();
-//
-//                packetBuffer.clear();
-//
-//                dataPacket = new DatagramPacket(packetBytes, packetBytes.length, group, Constants.PORT);
-//                socket.send(dataPacket);
-//
-//                seqNum++;
-//
-//            }
-//            try {
-//                // try to receive ack packet, if it fails we timeout
-//                // if it succeeds, increment our window size
-//                socket.setSoTimeout((int) (2 * currentEstimateRTT));
-//                socket.receive(ackPacket);
-//                end = System.currentTimeMillis();
-//                long sample = end - start;
-//                currentEstimateRTT = estimateRTT(sample, currentEstimateRTT);
-//                socket.setSoTimeout((int) (2 * currentEstimateRTT));
-//                windowSize++;
-//            } catch (SocketTimeoutException e){
-//                // Hit timeout
-//                // decrease windowsize
-//                // increase timeout
-//                // send entire window again
-//                windowSize /= 2;
-//                currentEstimateRTT *= 4;
-//                socket.setSoTimeout((int) (2 * currentEstimateRTT));
-//                seqNum = startingSeqNum; // revert seqnum to initial window position
-//                buffer.position(Constants.BUFFER_SIZE * (seqNum - 1));
-//                for (int i = 0; i < windowSize; i++) {
-//                    if (i == windowSize - 1){
-//                        finalWindowByte = 1;
-//                    } else {
-//                        finalWindowByte = 0;
-//                    }
-//                    remaining = buffer.remaining();
-//                    if (seqNum == numPackets) {
-//                        byte[] remain = new byte[remaining];
-//                        buffer.get(remain);
-//                        packetBuffer = ByteBuffer.allocate(remaining + OPCODE + SEQ_NUM);
-//                        packetBuffer.put(finalWindowByte);
-//                        packetBuffer.put(opCode);
-//                        packetBuffer.putShort(seqNum);
-//                        packetBuffer.put(remain);
-//                    } else {
-//                        packetBuffer = ByteBuffer.allocate(Constants.BUFFER_SIZE + OPCODE + SEQ_NUM);
-//                        buffer.get(dataBytes);
-//                        packetBuffer.put(finalWindowByte);
-//                        packetBuffer.put(opCode);
-//                        packetBuffer.putShort(seqNum);
-//                        packetBuffer.put(dataBytes);
-//                    }
-//                    byte[] packetBytes = packetBuffer.array();
-//
-//                    packetBuffer.clear();
-//
-//                    dataPacket = new DatagramPacket(packetBytes, packetBytes.length, group, Constants.PORT);
-//
-//                    socket.send(dataPacket);
-//                    seqNum++;
-//                }
-//                socket.receive(ackPacket);
-//                end = System.currentTimeMillis();
-//                long sample = end - start;
-//                currentEstimateRTT = estimateRTT(sample, currentEstimateRTT);
-//                socket.setSoTimeout((int) (2 * currentEstimateRTT));
-//                // don't increment window size here
-//            }
-//
-//            ByteBuffer seqBuffer = ByteBuffer.wrap(ackPacket.getData()); // process ack packet
-//            seqBuffer.getShort();
-//            short currentSeq = seqBuffer.getShort();
-//            if(seqNum != currentSeq){
-//                seqNum = currentSeq;
-//                buffer.position(Constants.BUFFER_SIZE * (seqNum - 1));
-//                // move buffer to ideal position, revert seqnum to whatever ack we receive
-//                socket.setSoTimeout((int) (2 * currentEstimateRTT));
-//            }
-//            startingSeqNum = seqNum; // changee our initial window position
-//
-//            remainingPackets = numPackets - (seqNum - 1); // remaining packets is used to keep track of final window size
-//            if(remainingPackets < windowSize){
-//                // less packets than our current window, change size
-//                windowSize = remainingPackets;
-//            }
-//
-//
-//        }
-//
-//
-//        // Clean up resources
-//        socket.close();
-//    }
-
-    int calculateWindowSize(final int numPackets){
-        int maxInitSize = 32;
-
-        int size = numPackets / 4;
-
-        if(size > maxInitSize) return maxInitSize;
-        else return 32 - Integer.numberOfLeadingZeros(size - 1) + 1;
-    }
-
-    int calculateNumPackets(){
-        // calculate the total number of packets we need
-        return 0;
-    }
-
-    long estimateRTT(final long sample, final long estimate) {
-        // Used a sample algorithm to determine a reasonable socket timeout time, limiting the
-        // shortest amount of time to 2 ms
-        double beta = 1/8d;
-        double alpha = 1 - beta;
-        double alphaestimate =  alpha * estimate;
-        double samplebeta =  beta * sample;
-        long res = (long)(alphaestimate + samplebeta);
-        if (res <= 2) res = 2; // upper bound for rtts is 2
-        return res;
-    }
-
 
 
 
@@ -352,7 +157,7 @@ public class Server implements WebcamListener{
         socket.send(new DatagramPacket(packetData, dataLeft, group, Constants.PORT));
 
         //send the image to all the clients who are connected
-        //socket.send(new DatagramPacket(image, image.length, group, Constants.PORT));
+        //socket.send(new DatagramPacket(image, image.length, group, tests.Constants.PORT));
     }
 
     private void tellClientsClosed() {

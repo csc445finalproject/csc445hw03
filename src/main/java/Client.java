@@ -1,3 +1,5 @@
+import Misc.Constants;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -8,13 +10,23 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Scanner;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.Border;
 
 public class Client extends JPanel implements ActionListener {
+
+
+    final int imageQueueSize = 100;
+
+    Thread receiveVideo;
+    Thread updateVideo;
+
+    ConcurrentHashMap<Integer, ImagePacket> images = new ConcurrentHashMap<Integer, ImagePacket>();
+    BlockingQueue<ImagePacket> imageQueue = new ArrayBlockingQueue<ImagePacket>(imageQueueSize);
 
     JFrame frame;
     JPanel panels;
@@ -23,7 +35,7 @@ public class Client extends JPanel implements ActionListener {
 
     JLabel imageLabel;
     BufferedImage image;
-    private ImageIcon imageIcon;
+    ImageIcon imageIcon;
 
     JTextField ipTextField;
 
@@ -31,24 +43,13 @@ public class Client extends JPanel implements ActionListener {
 
     JButton connectButton;
 
-    private MulticastSocket socket;
-    private byte[] imageBytes;
-    private InputStream in;
-
-    String ip;
+    MulticastSocket socket;
 
 
     public Client() throws IOException {
 
-//        System.out.println("Enter Ip Address: " );
-//        ip = (new Scanner(System.in)).nextLine();
-
-
         initializeGUI();
-        //dummyStream(ip);
 
-//        connectToHost();
-//        receiveVideoFeed();
     }
 
     public void initializeGUI() throws IOException {
@@ -84,7 +85,7 @@ public class Client extends JPanel implements ActionListener {
         panels.setLayout(new BorderLayout());
         textPanel.setLayout(new BorderLayout());
         imagePanel.setMinimumSize(new Dimension(500, 300));
-        imagePanel.setPreferredSize(new Dimension(500,300));
+        imagePanel.setPreferredSize(new Dimension(500, 300));
 
 
         //add the image
@@ -104,12 +105,6 @@ public class Client extends JPanel implements ActionListener {
 
     }
 
-    private void receiveVideoFeed() throws IOException, InvocationTargetException, InterruptedException {
-        while (true) {
-            updateDisplay(getVideoBytes());
-        }
-    }
-
 
     void connectToHost() throws IOException {
         //connect to connectionIP
@@ -120,7 +115,7 @@ public class Client extends JPanel implements ActionListener {
         System.out.println("waiting for a video feed...");
     }
 
-    void connectToHost(String ip) throws IOException{
+    void connectToHost(String ip) throws IOException {
         socket = new MulticastSocket(Constants.PORT);
         socket.setTimeToLive(25);
         InetAddress group = InetAddress.getByName(ip);
@@ -129,145 +124,139 @@ public class Client extends JPanel implements ActionListener {
     }
 
 
-    byte[] getVideoBytes() throws IOException {
-        DatagramPacket packet = new DatagramPacket(new byte[Constants.BUFFER_SIZE], Constants.BUFFER_SIZE);
-        ArrayList<DatagramPacket> packets = new ArrayList<DatagramPacket>();
+
+    //purpose of this function is to update the display whenever the receive video function has received enough frames
+
+    void updateDisplay() throws InvocationTargetException {
+
+        // TODO : continuously update video by taking whatever is at the front of the queue at given intervals
 
         while (true) {
-            socket.receive(packet);
-            packets.add(packet);
+            System.out.println("Updating display");
 
-            if (getBlockNumber(packet.getData()) == Short.MAX_VALUE)
-                break;
 
-        }
+            //this if statement will make sure we have buffered a few images before we begin updating the images
+            if (imageQueue.remainingCapacity() < 60) {
 
-        //sort packets by id
-        Collections.sort(packets, new Comparator<DatagramPacket>() {
-            @Override
-            public int compare(DatagramPacket datagramPacket, DatagramPacket t1) {
-                if (getBlockNumber(datagramPacket.getData()) < getBlockNumber(t1.getData()))
-                    return -1;
-                else if (getBlockNumber(datagramPacket.getData()) > getBlockNumber(t1.getData()))
-                    return 1;
-                else
-                    return 0;
+                //remove image from both hashtable and queue
+                ImagePacket currentImage = imageQueue.poll();
+                images.remove(currentImage.imageNum);
+
+                //display the image if its a good image
+                if (currentImage != null) {
+                    imageIcon = new ImageIcon(currentImage.getImageData());
+                    imageLabel.setIcon(imageIcon);
+                }
             }
-        });
-
-        byte [] frameBytes = new byte [(packets.get(packets.size()-1).getLength() + ((packets.size()-1) * 1024))];
 
 
-        for (DatagramPacket dp : packets){
-            System.arraycopy(dp.getData(), 2, frameBytes, getBlockNumber(dp.getData()) * 1024, 1024);
-        }
-
-
-
-        return frameBytes;
-
-        /*
-        DatagramPacket packet = new DatagramPacket(new byte[Constants.BUFFER_SIZE], Constants.BUFFER_SIZE);
-        socket.receive(packet);
-        System.out.println("got some data");
-        int numBytes = packet.getLength();
-        byte [] videoBytes = new byte[numBytes];
-        System.arraycopy(packet.getData(), 0, videoBytes, 0, numBytes);
-        return videoBytes;
-         */
-    }
-
-    void updateDisplay(byte[] currentImageBytes) throws InvocationTargetException, InterruptedException {
-        //figure out how to display video
-        System.out.println("Updating display");
-        imageIcon = new ImageIcon(currentImageBytes);
-        imageLabel.setIcon(imageIcon);
-    }
-
-
-    void dummyUpdateGUI() throws IOException {
-        for (int i = 0; ; i++) {
-            //update GUI indefinitely
             try {
-                Thread.sleep(35);
+                //TODO: sleep for a second and have the receiving thread interrupt this thread to tell it that
+                //TODO: more data is ready
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
+                System.out.println("Time to update the display!");
                 e.printStackTrace();
             }
 
-            //if even display a, if odd display b
-            if ((i & 1) == 0) {
-                imageIcon = new ImageIcon("a.png");
-            } else {
-                imageIcon = new ImageIcon("c.jpg");
-            }
-
-            imageLabel.setIcon(imageIcon);
         }
+
     }
 
+    /*
 
-    byte[] getDummyBytes() throws IOException {
-        //this will use tcp just because its easier (as we dont have sliding windows setup yet)
-        //so basically just receive a packet, and have dummy Update gui change the GUI
-        imageBytes = new byte[Constants.BIG_TEST_BUFFER];
-        int count = in.read(imageBytes);
-        System.arraycopy(imageBytes, 0, imageBytes, 0, count);
-        System.out.println("Received " + count + " bytes");
-        return imageBytes;
-    }
+    purpose of this function is to continuously listen for datagram packets, and whenever we receive a packet,
+    we add it to the queue if it is a new image, or we update the image by adding the appropriate bytes.
+
+    when we receive a new image, we tell the updateDisplay() method to update the image being displayed
+     */
 
 
-    public void dummyStream(String ip) throws IOException, InvocationTargetException, InterruptedException {
+    void receiveVideo() {
 
-        Socket s = new Socket(ip, Constants.PORT);
-        in = s.getInputStream();
-        System.out.println("Connected to: " + ip);
+        DatagramPacket incomingFrame = new DatagramPacket(new byte[Constants.BUFFER_SIZE], Constants.BUFFER_SIZE);
 
         while (true) {
-            updateDisplay(getDummyBytes());
+            try {
+                socket.receive(incomingFrame);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            byte[] data = new byte[incomingFrame.getLength()];
+            System.arraycopy(incomingFrame.getData(), 0, data, 0, data.length);
+
+            ImagePacket.ImageChunk imageChunk = new ImagePacket.ImageChunk(data);
+
+            if (images.contains(imageChunk.imageNum)) {
+                ImagePacket image = new ImagePacket(imageChunk.imageNum);
+                images.put(imageChunk.imageNum, image);
+                imageQueue.add(image);
+            } else {
+                //we already have received chunks of this image, so we update everything
+                images.get(imageChunk.imageNum).addChunk(data);
+            }
+
+            //tell the update video function that we just processed something, and display something new
+            updateVideo.interrupt();
         }
 
 
     }
 
+
+
+    //Triggered when the user hits the connect button
     @Override
     public void actionPerformed(ActionEvent e) {
         //when the connect button is pressed
-        if (!ipTextField.getText().equals("") || !ipTextField.getText().equals("Enter host IP address")) {
 
-            System.out.println("Connecting to " + ipTextField.getText());
+        System.out.println("Connecting to " + ipTextField.getText());
 
-            Thread stream = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        //Testing of gui on client side
-                        //dummyStream(ipTextField.getText());
+        receiveVideo = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
 
-                        //Testing of client to host streaming
+                    //join the appropriate socket
+                    if (ipTextField.getText().equals("") || ipTextField.getText() == null) {
+                        System.out.println("Connecting to multicast socket: " + Constants.IP_MULTICAST);
+                        connectToHost();
+                    } else {
+                        System.out.println("Connecting to: " + ipTextField.getText());
                         connectToHost(ipTextField.getText());
-                        receiveVideoFeed();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    } catch (InvocationTargetException e1) {
-                        e1.printStackTrace();
-                    } catch (InterruptedException e1) {
-                        e1.printStackTrace();
                     }
+
+                    //listen continuously for video packets being sent in
+                    receiveVideo();
+
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+
                 }
-            });
-            stream.start();
+            }
+        });
+
+        updateVideo = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+
+                    //start displaying whatever is available in the queue
+                    updateDisplay();
+                } catch (InvocationTargetException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
 
 
-        } else {
-            System.out.println("invalid ip address");
-        }
+
+        receiveVideo.start();
+        updateVideo.start();
 
 
     }
 
-    private short getBlockNumber(byte[] bytes) {
-        return (short) (((bytes[0] & 0xff) << 8) | (bytes[1] & 0xff));
-    }
 
 }
