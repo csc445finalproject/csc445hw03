@@ -7,9 +7,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -129,11 +126,9 @@ public class Client extends JPanel implements ActionListener {
 
     void updateDisplay() throws InvocationTargetException {
 
-        // TODO : continuously update video by taking whatever is at the front of the queue at given intervals
 
         while (true) {
             System.out.println("Updating display");
-
 
             //this if statement will make sure we have buffered a few images before we begin updating the images
             if (imageQueue.remainingCapacity() < 60) {
@@ -143,12 +138,11 @@ public class Client extends JPanel implements ActionListener {
                 images.remove(currentImage.imageNum);
 
                 //display the image if its a good image
-                if (currentImage != null) {
+                if (currentImage.getImageData() != null) {
                     imageIcon = new ImageIcon(currentImage.getImageData());
                     imageLabel.setIcon(imageIcon);
                 }
             }
-
 
             try {
                 //TODO: sleep for a second and have the receiving thread interrupt this thread to tell it that
@@ -158,9 +152,7 @@ public class Client extends JPanel implements ActionListener {
                 System.out.println("Time to update the display!");
                 e.printStackTrace();
             }
-
         }
-
     }
 
     /*
@@ -188,17 +180,20 @@ public class Client extends JPanel implements ActionListener {
 
             ImagePacket.ImageChunk imageChunk = new ImagePacket.ImageChunk(data);
 
-            if (images.contains(imageChunk.imageNum)) {
+            if (!images.contains(imageChunk.imageNum)) {
                 ImagePacket image = new ImagePacket(imageChunk.imageNum);
+                image.addChunk(data);
                 images.put(imageChunk.imageNum, image);
                 imageQueue.add(image);
+
+                updateVideo.interrupt();
             } else {
                 //we already have received chunks of this image, so we update everything
                 images.get(imageChunk.imageNum).addChunk(data);
             }
 
             //tell the update video function that we just processed something, and display something new
-            updateVideo.interrupt();
+
         }
 
 

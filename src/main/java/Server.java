@@ -130,41 +130,19 @@ public class Server {
 
 
 
-
-
     private void sendImage(byte[] image) throws IOException {
-        int dataLeft = image.length;
-        short blockNumber = 0;
-        byte[] packetData = new byte[1026];
-        byte[] bnBytes;
-        do {
-            bnBytes = ByteBuffer.allocate(2).putShort(blockNumber).array();
-            packetData[0] = bnBytes[0];
-            packetData[1] = bnBytes[1];
 
-            System.arraycopy(image, blockNumber * 1024, packetData, 2, 1024);
-            socket.send(new DatagramPacket(packetData, 1026, group, Constants.PORT));
-            System.out.println("Packet sent");
-            dataLeft -= 1024;
-            ++blockNumber;
-        } while (dataLeft > 1024);
+        //TODO : this function needs to use the ImagePacket class so we can translate everything back and forth more easily
 
-        bnBytes = ByteBuffer.allocate(2).putShort(Short.MAX_VALUE).array();
-        packetData[0] = bnBytes[0];
-        packetData[1] = bnBytes[1];
-        packetData = new byte[dataLeft];
-        System.arraycopy(image, blockNumber * 1024, packetData, 0, dataLeft);
-        socket.send(new DatagramPacket(packetData, dataLeft, group, Constants.PORT));
 
-        //send the image to all the clients who are connected
-        //socket.send(new DatagramPacket(image, image.length, group, tests.Constants.PORT));
+
+
     }
 
     private void tellClientsClosed() {
 
         //TODO: send some sort of escape sequence to multicast socket signaling that the broadcast is over
         webcam.close();
-
         System.out.println("Closing feed");
 
     }
@@ -182,112 +160,11 @@ public class Server {
         System.out.println("Took image");
 
 
-        //uncomment this to see what image actually looks like
-
-//        ByteArrayInputStream bis = new ByteArrayInputStream(compressedImg);
-//        BufferedImage bImage2 = ImageIO.read(bis);
-//        ImageIO.write(bImage2, "jpg", new File("output.jpg") );
-
-
         return compressedImg;
 
 
-        /*
-
-        alternatively, this makes images of higher quality, but far bigger.
-        Not sure which is faster
-
-
-        BufferedImage image = webcam.getImage();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(image, "JPG", baos);
-        byte[] data = baos.toByteArray();
-
-
-        or even
-
-        byte [] bytes = webcam.getImageBytes();
-
-        but again, images are big, so speed could be issue here
-
-         */
-
     }
 
 
-    /*
-
-     ALL THE CODE BELOW IS FOR A TEST STREAM USING TCP
-
-     */
-
-
-
-
-    private void dummyStream() throws IOException {
-        ServerSocket s = new ServerSocket(Constants.PORT);
-        Socket client = s.accept();
-
-        OutputStream out = client.getOutputStream();
-
-        sendPictures(out);
-
-    }
-
-
-    private void sendPictures(OutputStream out) throws IOException {
-
-        byte[] pep1 = new byte[(int) (new File("pep.jpg").length())];
-        FileInputStream fs = new FileInputStream("pep.jpg");
-        fs.read(pep1);
-        fs.close();
-
-
-        byte[] pep2 = new byte[(int) (new File("pep2.jpg").length())];
-        FileInputStream fs2 = new FileInputStream("pep2.jpg");
-        fs2.read(pep2);
-        fs2.close();
-
-
-        //alternate sending the 2 images we have on file for testing purposess
-
-        for (int i = 0; ; i++) {
-            if ((i & 1) == 0 ) {
-                out.write(pep1);
-                System.out.println("Sent " + pep1.length + " bytes");
-            } else {
-                out.write(pep2);
-                System.out.println("Sent " + pep2.length + " bytes");
-            }
-
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-        }
-
-
-    }
-
-
-
-
-    /*
-
-    TODO: Implement these functions if we decide to do anything with motion
-
-    public void motionDetected(WebcamMotionEvent webcamMotionEvent) {
-
-    }
-
-    void DetectMotion() {
-        WebcamMotionDetector detector = new WebcamMotionDetector(Webcam.getDefault());
-        detector.setInterval(100); //
-        detector.addMotionListener(this);
-        detector.start();
-    }
-    */
 
 }

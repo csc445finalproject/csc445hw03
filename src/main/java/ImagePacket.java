@@ -50,19 +50,34 @@ public class ImagePacket {
     public boolean isValid(){
 
         return imageChunks.size() == imageChunks.get(0).numChunks;
+
     }
 
 
 
 
-    static class ImageChunk implements Comparable{
+    static class ImageChunk implements Comparable {
+
+        /*
+
+         4 bytes(int)  2 bytes(short)  2 bytes(short)     byte[]
+            -------------------------------------------------------
+           | imageNum |  order         |   numChunks |    data    |
+            -------------------------------------------------------
+
+         */
+
+
+
+
+
 
         byte [] data;
         int imageNum;
         int order;
         int numChunks;
 
-        public ImageChunk(byte [] b) {
+        public ImageChunk(byte [] b, int imageNum, int order, int numChunks) {
             //TODO: take b, and the first 'long' is the imageNum, the second 'short' is the order,
             // TODO the third short is the totalNumChunks for that image and the rest is the actual data for that ImageChunk
 
