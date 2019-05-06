@@ -151,10 +151,11 @@ public class Client extends JPanel implements ActionListener {
                     ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
                     try {
                         BufferedImage img = ImageIO.read(bais);
-                        ImageIO.write(img,  "JPG", new File("hello-world.jpg"));
+                        ImageIO.write(img,  "jpeg", new File("hello-world.jpeg"));
                         System.out.println("finished writing image");
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
+                        //throw new RuntimeException(e);
                     }
 
                 }
@@ -163,7 +164,7 @@ public class Client extends JPanel implements ActionListener {
             try {
                 //TODO: sleep for a second and have the receiving thread interrupt this thread to tell it that
                 //TODO: more data is ready
-                Thread.sleep(50);
+                Thread.sleep(15);
             } catch (InterruptedException e) {
                 System.out.println("Time to update the display!");
                 //e.printStackTrace();
@@ -191,7 +192,7 @@ public class Client extends JPanel implements ActionListener {
 
          */
 
-        DatagramPacket incomingFrame = new DatagramPacket(new byte[Constants.BUFFER_SIZE], Constants.BUFFER_SIZE);
+        DatagramPacket incomingFrame = new DatagramPacket(new byte[Constants.IMAGE_CHUNK_SIZE], Constants.IMAGE_CHUNK_SIZE);
 
         while (true) {
             try {
