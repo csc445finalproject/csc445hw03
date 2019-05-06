@@ -38,6 +38,9 @@ public class Server {
     ScheduledFuture<?> videoHandler;
 
 
+    int numImagesTaken = 0;
+
+
     public Server(String ip) throws SocketException {
 
 
@@ -130,12 +133,38 @@ public class Server {
 
 
 
+    //Used to send an entire image over.
+    //Note that the param image is the byte [] representing the ENTIRE IMAGE
+    //and must be divided and sectionned off into multiple imageChunks
     private void sendImage(byte[] image) throws IOException {
 
         //TODO : this function needs to use the ImagePacket class so we can translate everything back and forth more easily
 
+        int numChunks = (image.length / Constants.BUFFER_SIZE) + 1;
 
+        for (int i = 0; i<numChunks; i++) {
 
+            byte [] imageChunkData;
+
+            //lastPacket
+            if (i == numChunks-1) {
+                int packetSize = image.length - ((i)*Constants.BUFFER_SIZE);
+                imageChunkData = new byte[packetSize];
+
+            } else {
+                //not the last packet
+                imageChunkData = new byte [Constants.BUFFER_SIZE];
+            }
+
+            System.arraycopy(image, i*Constants.BUFFER_SIZE, imageChunkData, 0, imageChunkData.length);
+
+            ImagePacket.ImageChunk chunk = new ImagePacket.ImageChunk(imageChunkData, numImagesTaken, i, numChunks);
+            byte [] dataTosend = chunk.getBytes();
+
+            DatagramPacket packet = new DatagramPacket(dataTosend, dataTosend.length);
+
+            socket.send(packet);
+        }
 
     }
 
@@ -159,7 +188,7 @@ public class Server {
         byte [] compressedImg = baos.toByteArray();
         System.out.println("Took image");
 
-
+        numImagesTaken++;
         return compressedImg;
 
 

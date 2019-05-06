@@ -70,19 +70,16 @@ public class ImagePacket {
          */
 
 
-
-
-
-
         byte [] data;
         int imageNum;
-        int order;
-        int numChunks;
+        short order;
+        short numChunks;
 
-        public ImageChunk(byte [] b, int imageNum, int order, int numChunks) {
-            //TODO: take b, and the first 'long' is the imageNum, the second 'short' is the order,
-            // TODO the third short is the totalNumChunks for that image and the rest is the actual data for that ImageChunk
-
+        public ImageChunk(byte [] b, int imageNum, short order, short numChunks) {
+            this.data = b;
+            this.imageNum = imageNum;
+            this.order = order;
+            this.numChunks = numChunks;
         }
 
 
@@ -90,7 +87,22 @@ public class ImagePacket {
         public int compareTo(Object o) {
             return this.imageNum - ((ImageChunk)o).imageNum;
         }
+
+
+        public byte [] getBytes() {
+            ByteBuffer bb = ByteBuffer.allocate(Constants.BUFFER_SIZE + Integer.BYTES + (Short.BYTES*2));
+            bb.putInt(imageNum);
+            bb.putShort(order);
+            bb.putShort(numChunks);
+            bb.put(data);
+            return bb.array();
+
+        }
+
+
     }
+
+
 
 
 
