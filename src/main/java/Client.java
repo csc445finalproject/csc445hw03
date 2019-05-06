@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
@@ -145,6 +146,16 @@ public class Client extends JPanel implements ActionListener {
                 if (imageData != null) {
                     imageIcon = new ImageIcon(imageData);
                     imageLabel.setIcon(imageIcon);
+
+
+                    ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
+                    try {
+                        BufferedImage img = ImageIO.read(bais);
+                        ImageIO.write(img,  "JPG", new File("hello-world.jpg"));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
                 }
             }
 
