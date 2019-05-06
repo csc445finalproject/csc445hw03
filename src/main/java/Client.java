@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
@@ -136,7 +135,7 @@ public class Client extends JPanel implements ActionListener {
             System.out.println("Updating display");
 
             //this if statement will make sure we have buffered a few images before we begin updating the images
-            if ((imageQueueSize - imageQueue.remainingCapacity()) > 50) {
+            if ((imageQueueSize - imageQueue.remainingCapacity()) > 5) {
 
                 //remove image from both hashtable and queue
                 ImagePacket currentImage = imageQueue.poll();
@@ -146,24 +145,10 @@ public class Client extends JPanel implements ActionListener {
                 if (imageData != null) {
                     imageIcon = new ImageIcon(imageData);
                     imageLabel.setIcon(imageIcon);
-
-
-                    ByteArrayInputStream bais = new ByteArrayInputStream(imageData);
-                    try {
-                        BufferedImage img = ImageIO.read(bais);
-                        ImageIO.write(img,  "jpeg", new File("hello-world.jpeg"));
-                        System.out.println("finished writing image");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        //throw new RuntimeException(e);
-                    }
-
                 }
             }
 
             try {
-                //TODO: sleep for a second and have the receiving thread interrupt this thread to tell it that
-                //TODO: more data is ready
                 Thread.sleep(15);
             } catch (InterruptedException e) {
                 System.out.println("Time to update the display!");
@@ -215,14 +200,14 @@ public class Client extends JPanel implements ActionListener {
 
             if (!images.containsKey(imageChunk.imageNum)) {
                 ImagePacket image = new ImagePacket(imageChunk.imageNum);
-                image.addChunk(data, imageNum, order, numChunks);
+                image.addChunk(chunkBytes, imageNum, order, numChunks);
                 images.put(imageChunk.imageNum, image);
                 imageQueue.add(image);
 
                 updateVideo.interrupt();
             } else {
                 //we already have received chunks of this image, so we update everything
-                images.get(imageChunk.imageNum).addChunk(data, imageNum, order, numChunks);
+                images.get(imageChunk.imageNum).addChunk(chunkBytes, imageNum, order, numChunks);
             }
 
             //tell the update video function that we just processed something, and display something new
@@ -277,7 +262,6 @@ public class Client extends JPanel implements ActionListener {
                 }
             }
         });
-
 
 
         receiveVideo.start();

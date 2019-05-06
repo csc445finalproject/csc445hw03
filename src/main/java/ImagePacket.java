@@ -24,7 +24,7 @@ public class ImagePacket {
         if (isValid()) {
             //sort everything first
             this.sort();
-            int regulatPacketsLength = ((imageChunks.size()-1) * Constants.BUFFER_SIZE);
+            int regulatPacketsLength = ((imageChunks.size()-1) * Constants.IMAGE_CHUNK_SIZE);
             int lastPacketLength = (imageChunks.get(imageChunks.size()-1).data.length);
 
             int arrLength = regulatPacketsLength + lastPacketLength;
