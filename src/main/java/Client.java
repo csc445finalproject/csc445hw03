@@ -42,6 +42,7 @@ public class Client extends JPanel implements ActionListener {
     JButton connectButton;
 
     MulticastSocket socket;
+    DatagramSocket UNICAST_SOCKET;
 
 
     public Client() throws IOException {
@@ -114,10 +115,12 @@ public class Client extends JPanel implements ActionListener {
     }
 
     void connectToHost(String ip) throws IOException {
-        socket = new MulticastSocket(Constants.PORT);
-        socket.setTimeToLive(25);
-        InetAddress group = InetAddress.getByName(ip);
-        socket.joinGroup(group);
+//        socket = new MulticastSocket(Constants.PORT);
+//        socket.setTimeToLive(25);
+//        InetAddress group = InetAddress.getByName(ip);
+//        socket.joinGroup(group);
+
+        UNICAST_SOCKET = new DatagramSocket();
         System.out.println("waiting for a video feed...");
     }
 
@@ -180,7 +183,8 @@ public class Client extends JPanel implements ActionListener {
 
         while (true) {
             try {
-                socket.receive(incomingFrame);
+                //socket.receive(incomingFrame);
+                UNICAST_SOCKET.receive(incomingFrame);
             } catch (IOException e) {
                 e.printStackTrace();
             }
