@@ -135,15 +135,15 @@ public class Client extends JPanel implements ActionListener {
             System.out.println("Updating display");
 
             //this if statement will make sure we have buffered a few images before we begin updating the images
-            if (imageQueue.remainingCapacity() < 60) {
+            if ((imageQueueSize - imageQueue.remainingCapacity()) > 50) {
 
                 //remove image from both hashtable and queue
                 ImagePacket currentImage = imageQueue.poll();
                 images.remove(currentImage.imageNum);
-
+                byte [] imageData = currentImage.getImageData();
                 //display the image if its a good image
-                if (currentImage.getImageData() != null) {
-                    imageIcon = new ImageIcon(currentImage.getImageData());
+                if (imageData != null) {
+                    imageIcon = new ImageIcon(imageData);
                     imageLabel.setIcon(imageIcon);
                 }
             }
