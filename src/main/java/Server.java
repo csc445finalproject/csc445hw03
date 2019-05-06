@@ -141,23 +141,23 @@ public class Server {
 
         //TODO : this function needs to use the ImagePacket class so we can translate everything back and forth more easily
 
+        ByteBuffer buffer = ByteBuffer.wrap(image);
         int numChunks = (image.length / Constants.BUFFER_SIZE) + 1;
         short shortChunks = (short)numChunks;
-        for (short i = 0; i<numChunks; i++) {
+        for (short i = 0; i< shortChunks; i++) {
 
             byte [] imageChunkData;
 
             //lastPacket
             if (i == numChunks-1) {
-                int packetSize = image.length - ((i)*Constants.BUFFER_SIZE);
-                imageChunkData = new byte[packetSize];
+                imageChunkData = new byte[buffer.remaining()];
 
             } else {
                 //not the last packet
                 imageChunkData = new byte [Constants.BUFFER_SIZE];
             }
 
-            System.arraycopy(image, i*Constants.BUFFER_SIZE, imageChunkData, 0, imageChunkData.length);
+            buffer.get(imageChunkData);
 
             ImagePacket.ImageChunk chunk = new ImagePacket.ImageChunk(imageChunkData, numImagesTaken, i, shortChunks);
             byte [] dataTosend = chunk.getBytes();
