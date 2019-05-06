@@ -154,7 +154,7 @@ public class Client extends JPanel implements ActionListener {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 System.out.println("Time to update the display!");
-                e.printStackTrace();
+                //e.printStackTrace();
             }
         }
     }
@@ -200,7 +200,7 @@ public class Client extends JPanel implements ActionListener {
             buffer.get(chunkBytes);
             ImagePacket.ImageChunk imageChunk = new ImagePacket.ImageChunk(chunkBytes, imageNum, order, numChunks);
 
-            if (!images.contains(imageChunk.imageNum)) {
+            if (!images.containsKey(imageChunk.imageNum)) {
                 ImagePacket image = new ImagePacket(imageChunk.imageNum);
                 image.addChunk(data, imageNum, order, numChunks);
                 images.put(imageChunk.imageNum, image);
