@@ -163,7 +163,7 @@ public class Client extends JPanel implements ActionListener {
             try {
                 //TODO: sleep for a second and have the receiving thread interrupt this thread to tell it that
                 //TODO: more data is ready
-                Thread.sleep(1000);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 System.out.println("Time to update the display!");
                 //e.printStackTrace();
