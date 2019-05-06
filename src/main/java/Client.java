@@ -120,7 +120,7 @@ public class Client extends JPanel implements ActionListener {
 //        InetAddress group = InetAddress.getByName(ip);
 //        socket.joinGroup(group);
 
-        UNICAST_SOCKET = new DatagramSocket();
+        UNICAST_SOCKET = new DatagramSocket(Constants.PORT);
         System.out.println("waiting for a video feed...");
     }
 

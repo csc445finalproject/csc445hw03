@@ -44,7 +44,7 @@ public class Server {
     public Server(String ip) throws SocketException {
 
 
-        socket = new DatagramSocket();
+        socket = new DatagramSocket(Constants.PORT);
 
         try {
 
@@ -75,6 +75,7 @@ public class Server {
 
         public void run() {
             try {
+                System.out.println("took image");
                 sendImage(captureImage());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -161,7 +162,7 @@ public class Server {
             ImagePacket.ImageChunk chunk = new ImagePacket.ImageChunk(imageChunkData, numImagesTaken, i, shortChunks);
             byte [] dataTosend = chunk.getBytes();
 
-            DatagramPacket packet = new DatagramPacket(dataTosend, dataTosend.length);
+            DatagramPacket packet = new DatagramPacket(dataTosend, dataTosend.length, group, Constants.PORT);
 
             socket.send(packet);
         }
