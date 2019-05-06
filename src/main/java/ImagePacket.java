@@ -24,7 +24,10 @@ public class ImagePacket {
         if (isValid()) {
             //sort everything first
             this.sort();
-            int arrLength = ((imageChunks.size()-1) * Constants.BUFFER_SIZE) + (imageChunks.get(imageChunks.size()-1).data.length);
+            int regulatPacketsLength = ((imageChunks.size()-1) * Constants.BUFFER_SIZE);
+            int lastPacketLength = (imageChunks.get(imageChunks.size()-1).data.length);
+
+            int arrLength = regulatPacketsLength + lastPacketLength;
             byte [] imageBytes;
             ByteBuffer buffer = ByteBuffer.allocate(arrLength);
 
@@ -90,7 +93,7 @@ public class ImagePacket {
 
 
         public byte [] getBytes() {
-            ByteBuffer bb = ByteBuffer.allocate(Constants.BUFFER_SIZE + Integer.BYTES + (Short.BYTES*2));
+            ByteBuffer bb = ByteBuffer.allocate(data.length + Integer.BYTES + (Short.BYTES*2));
             bb.putInt(imageNum);
             bb.putShort(order);
             bb.putShort(numChunks);

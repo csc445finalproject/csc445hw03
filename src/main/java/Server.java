@@ -7,6 +7,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
@@ -21,7 +22,7 @@ import Misc.Constants;
 
 public class Server {
 
-    private final float imageQuality = 0.01f;
+    private final float imageQuality = 0.45f;
     private Webcam webcam;
     private InetAddress group;
     private DatagramSocket socket;
@@ -98,7 +99,7 @@ public class Server {
 
     private void initializeWebcam() {
         webcam = Webcam.getDefault();
-        webcam.setViewSize(WebcamResolution.VGA.getSize());
+        webcam.setViewSize(new Dimension(320,240));
 
         cameraOpen = true;
 
@@ -139,8 +140,6 @@ public class Server {
     //and must be divided and sectionned off into multiple imageChunks
     private void sendImage(byte[] image) throws IOException {
 
-        //TODO : this function needs to use the ImagePacket class so we can translate everything back and forth more easily
-
         ByteBuffer buffer = ByteBuffer.wrap(image);
         int numChunks = (image.length / Constants.BUFFER_SIZE) + 1;
         short shortChunks = (short)numChunks;
@@ -167,6 +166,7 @@ public class Server {
             socket.send(packet);
         }
 
+
     }
 
 
@@ -176,7 +176,6 @@ public class Server {
         //TODO: send some sort of escape sequence to multicast socket signaling that the broadcast is over
         webcam.close();
         System.out.println("Closing feed");
-
     }
 
 
@@ -193,8 +192,6 @@ public class Server {
 
         numImagesTaken++;
         return compressedImg;
-
-
     }
 
 

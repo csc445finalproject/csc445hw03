@@ -152,6 +152,7 @@ public class Client extends JPanel implements ActionListener {
                     try {
                         BufferedImage img = ImageIO.read(bais);
                         ImageIO.write(img,  "JPG", new File("hello-world.jpg"));
+                        System.out.println("finished writing image");
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
