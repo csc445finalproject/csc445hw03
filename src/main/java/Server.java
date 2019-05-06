@@ -141,8 +141,8 @@ public class Server {
         //TODO : this function needs to use the ImagePacket class so we can translate everything back and forth more easily
 
         int numChunks = (image.length / Constants.BUFFER_SIZE) + 1;
-
-        for (int i = 0; i<numChunks; i++) {
+        short shortChunks = (short)numChunks;
+        for (short i = 0; i<numChunks; i++) {
 
             byte [] imageChunkData;
 
@@ -158,7 +158,7 @@ public class Server {
 
             System.arraycopy(image, i*Constants.BUFFER_SIZE, imageChunkData, 0, imageChunkData.length);
 
-            ImagePacket.ImageChunk chunk = new ImagePacket.ImageChunk(imageChunkData, numImagesTaken, i, numChunks);
+            ImagePacket.ImageChunk chunk = new ImagePacket.ImageChunk(imageChunkData, numImagesTaken, i, shortChunks);
             byte [] dataTosend = chunk.getBytes();
 
             DatagramPacket packet = new DatagramPacket(dataTosend, dataTosend.length);
@@ -167,6 +167,8 @@ public class Server {
         }
 
     }
+
+
 
     private void tellClientsClosed() {
 

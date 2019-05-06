@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.*;
+import java.nio.ByteBuffer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -166,6 +167,15 @@ public class Client extends JPanel implements ActionListener {
 
     void receiveVideo() {
 
+         /*
+
+         4 bytes(int)  2 bytes(short)  2 bytes(short)     byte[]
+            -------------------------------------------------------
+           | imageNum |  order         |   numChunks |    data    |
+            -------------------------------------------------------
+
+         */
+
         DatagramPacket incomingFrame = new DatagramPacket(new byte[Constants.BUFFER_SIZE], Constants.BUFFER_SIZE);
 
         while (true) {
@@ -175,21 +185,27 @@ public class Client extends JPanel implements ActionListener {
                 e.printStackTrace();
             }
 
-            byte[] data = new byte[incomingFrame.getLength()];
-            System.arraycopy(incomingFrame.getData(), 0, data, 0, data.length);
+            byte[] data = incomingFrame.getData();
+            ByteBuffer buffer = ByteBuffer.wrap(data);
 
-            ImagePacket.ImageChunk imageChunk = new ImagePacket.ImageChunk(data);
+            int imageNum = buffer.getInt();
+            short order = buffer.getShort();
+            short numChunks = buffer.getShort();
+
+            byte [] chunkBytes = new byte[buffer.remaining()];
+            buffer.get(chunkBytes);
+            ImagePacket.ImageChunk imageChunk = new ImagePacket.ImageChunk(chunkBytes, imageNum, order, numChunks);
 
             if (!images.contains(imageChunk.imageNum)) {
                 ImagePacket image = new ImagePacket(imageChunk.imageNum);
-                image.addChunk(data);
+                image.addChunk(data, imageNum, order, numChunks);
                 images.put(imageChunk.imageNum, image);
                 imageQueue.add(image);
 
                 updateVideo.interrupt();
             } else {
                 //we already have received chunks of this image, so we update everything
-                images.get(imageChunk.imageNum).addChunk(data);
+                images.get(imageChunk.imageNum).addChunk(data, imageNum, order, numChunks);
             }
 
             //tell the update video function that we just processed something, and display something new

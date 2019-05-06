@@ -14,8 +14,8 @@ public class ImagePacket {
         imageChunks = new ArrayList<ImageChunk>();
     }
 
-    public void addChunk(byte [] bytes){
-        imageChunks.add(new ImageChunk(bytes));
+    public void addChunk(byte [] bytes, int imageNum, short order, short numChunks){
+        imageChunks.add(new ImageChunk(bytes, imageNum, order, numChunks));
     }
 
 
