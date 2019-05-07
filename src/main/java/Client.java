@@ -1,3 +1,4 @@
+import Encryption.AES;
 import Misc.Constants;
 
 import java.awt.*;
@@ -41,6 +42,8 @@ public class Client extends JFrame implements ActionListener {
     String passcode;
     String myIp = Main.printExternalIP();
 
+    AES aes;
+
 
 
     /*
@@ -71,7 +74,7 @@ public class Client extends JFrame implements ActionListener {
 
 
     public Client() throws IOException {
-
+        aes = new AES();
         initializeGUI();
 
     }
@@ -279,12 +282,16 @@ public class Client extends JFrame implements ActionListener {
                 }
 
                 connectButton.setEnabled(true);
+                passwordField.setEnabled(true);
                 connectButton.setText("Connect");
                 break;
             }
 
             byte[] data = incomingFrame.getData();
-            ByteBuffer buffer = ByteBuffer.wrap(data);
+
+            byte [] decryptedData = aes.decrypt(data, passcode.getBytes());
+
+            ByteBuffer buffer = ByteBuffer.wrap(decryptedData);
 
             int imageNum = buffer.getInt();
             short order = buffer.getShort();
@@ -340,6 +347,8 @@ public class Client extends JFrame implements ActionListener {
                     //get the passcode from the user
                     passcode = passwordField.getText();
                     System.out.println("Passcode: " + passcode);
+
+                    passwordField.setEnabled(false);
 
                     //listen continuously for video packets being sent in
                     receiveVideo();
