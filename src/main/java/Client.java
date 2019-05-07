@@ -125,7 +125,7 @@ public class Client extends JPanel implements ActionListener {
 //        socket.joinGroup(group);
         group = InetAddress.getByName(Constants.IP_MULTICAST);
         UNICAST_SOCKET = new DatagramSocket(Constants.UNICAST_PORT);
-        mcForward = new DatagramSocket(Constants.MULTICAST_PORT, group);
+        mcForward = new DatagramSocket(Constants.MULTICAST_PORT);
         isMultiHost = true;
         System.out.println("waiting for a video feed...");
     }
