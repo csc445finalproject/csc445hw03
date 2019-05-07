@@ -27,6 +27,7 @@ public class Server {
     private InetAddress group;
     private DatagramSocket socket;
     private boolean cameraOpen;
+    private String roomPassword;
 
     private ImageWriter writer;
     private ImageWriteParam jpgWriteParam;
@@ -42,9 +43,9 @@ public class Server {
     int numImagesTaken = 0;
 
 
-    public Server(String ip) throws SocketException {
+    public Server(String ip, String roomPassword) throws SocketException {
 
-
+        this.roomPassword = roomPassword;
         socket = new DatagramSocket(Constants.UNICAST_PORT);
 
         try {

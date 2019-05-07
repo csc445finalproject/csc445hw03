@@ -21,30 +21,31 @@ public class ImagePacket {
 
     public byte [] getImageData(){
 
-        if (isValid()) {
-            //sort everything first
-            this.sort();
-            int regulatPacketsLength = ((imageChunks.size()-1) * Constants.IMAGE_CHUNK_SIZE);
-            int lastPacketLength = (imageChunks.get(imageChunks.size()-1).data.length);
+            if (isValid()) {
+                //sort everything first
+                this.sort();
+                int regulatPacketsLength = ((imageChunks.size()-1) * Constants.IMAGE_CHUNK_SIZE);
+                int lastPacketLength = (imageChunks.get(imageChunks.size()-1).data.length);
 
-            int arrLength = regulatPacketsLength + lastPacketLength;
-            byte [] imageBytes;
-            ByteBuffer buffer = ByteBuffer.allocate(arrLength);
+                int arrLength = regulatPacketsLength + lastPacketLength;
+                byte [] imageBytes;
+                ByteBuffer buffer = ByteBuffer.allocate(arrLength);
 
-            //copy all bytes from the imageChunks into the total list of bytes
-            for (ImageChunk ic: imageChunks) {
-                buffer.put(ic.data);
+                //copy all bytes from the imageChunks into the total list of bytes
+                for (ImageChunk ic: imageChunks) {
+                    buffer.put(ic.data);
+                }
+
+                imageBytes = buffer.array();
+                return imageBytes;
+
+
+            } else {
+
+                //no image will be returned for this frame
+                return null;
             }
 
-            imageBytes = buffer.array();
-            return imageBytes;
-
-
-        } else {
-
-            //no image will be returned for this frame
-            return null;
-        }
 
     }
 
@@ -57,7 +58,6 @@ public class ImagePacket {
         return imageChunks.size() == imageChunks.get(0).numChunks;
 
     }
-
 
 
 
