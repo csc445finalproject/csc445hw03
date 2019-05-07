@@ -48,14 +48,7 @@
             </exclusions>
 
         </dependency>
-
-
-        <dependency>
-            <groupId>xuggle</groupId>
-            <artifactId>xuggle-xuggler</artifactId>
-            <version>5.4</version>
-        </dependency>
-
+        
 
     </dependencies>
 
