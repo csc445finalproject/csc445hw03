@@ -204,6 +204,7 @@ public class Client extends JPanel implements ActionListener {
                 //socket.receive(incomingFrame);
                 if(isMultiHost) {
                     UNICAST_SOCKET.receive(incomingFrame);
+                    System.out.println("Packet forwarded");
                     mcForward.send(incomingFrame);
                 }
                 else socket.receive(incomingFrame);
@@ -264,10 +265,10 @@ public class Client extends JPanel implements ActionListener {
                     //join the appropriate socket
                     if (ipTextField.getText().equals("forwarder")) {
                         System.out.println("Connecting to multicast socket: " + Constants.IP_MULTICAST);
-                        connectToHost();
+                        connectToHost(ipTextField.getText());
                     } else {
                         System.out.println("Connecting to: " + ipTextField.getText());
-                        connectToHost(ipTextField.getText());
+                        connectToHost();
                     }
 
                     //listen continuously for video packets being sent in
