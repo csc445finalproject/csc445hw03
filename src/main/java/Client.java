@@ -42,9 +42,11 @@ public class Client extends JPanel implements ActionListener {
     JButton connectButton;
 
     MulticastSocket socket;
-    DatagramSocket UNICAST_SOCKET;
+    DatagramSocket UNICAST_SOCKET, mcForward;
 
-    boolean streamOver;
+    boolean streamOver, isMultiHost;
+
+    static InetAddress group;
 
 
     public Client() throws IOException {
@@ -111,8 +113,8 @@ public class Client extends JPanel implements ActionListener {
         //connect to connectionIP
         socket = new MulticastSocket(Constants.PORT);
         socket.setTimeToLive(25);
-        InetAddress group = InetAddress.getByName(Constants.IP_MULTICAST);
         socket.joinGroup(group);
+        isMultiHost = false;
         System.out.println("waiting for a video feed...");
     }
 
@@ -123,6 +125,8 @@ public class Client extends JPanel implements ActionListener {
 //        socket.joinGroup(group);
 
         UNICAST_SOCKET = new DatagramSocket(Constants.PORT);
+        mcForward = new DatagramSocket(Constants.PORT);
+        isMultiHost = true;
         System.out.println("waiting for a video feed...");
     }
 
@@ -130,7 +134,7 @@ public class Client extends JPanel implements ActionListener {
 
     //purpose of this function is to update the display whenever the receive video function has received enough frames
 
-    void updateDisplay() throws InvocationTargetException {
+    void updateDisplay() throws IOException {
 
 
         while (true) {
@@ -170,7 +174,7 @@ public class Client extends JPanel implements ActionListener {
             }
         }
     }
-
+    
     /*
 
     purpose of this function is to continuously listen for datagram packets, and whenever we receive a packet,
@@ -192,19 +196,25 @@ public class Client extends JPanel implements ActionListener {
          */
 
         DatagramPacket incomingFrame = new DatagramPacket(new byte[Constants.IMAGE_CHUNK_SIZE], Constants.IMAGE_CHUNK_SIZE);
-        UNICAST_SOCKET.setSoTimeout(3000);
+        if (isMultiHost) UNICAST_SOCKET.setSoTimeout(3000);
+        else socket.setSoTimeout(3000);
 
         while (true) {
             try {
                 //socket.receive(incomingFrame);
-                UNICAST_SOCKET.receive(incomingFrame);
+                if(isMultiHost) {
+                    UNICAST_SOCKET.receive(incomingFrame);
+                    mcForward.send(incomingFrame);
+                }
+                else socket.receive(incomingFrame);
                 streamOver = false;
             } catch (SocketTimeoutException e) {
                 //The host has ended their stream (probably)
                 //e.printStackTrace();
                 streamOver = true;
                 updateVideo.interrupt();
-                UNICAST_SOCKET.close();
+                if(isMultiHost) UNICAST_SOCKET.close();
+                else socket.close();
                 break;
             }
 
@@ -274,11 +284,10 @@ public class Client extends JPanel implements ActionListener {
             @Override
             public void run() {
                 try {
-
                     //start displaying whatever is available in the queue
                     updateDisplay();
-                } catch (InvocationTargetException e1) {
-                    e1.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -289,6 +298,7 @@ public class Client extends JPanel implements ActionListener {
 
 
     }
+
 
 
 }
