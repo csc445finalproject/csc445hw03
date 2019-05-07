@@ -196,8 +196,13 @@ public class Client extends JPanel implements ActionListener {
          */
 
         DatagramPacket incomingFrame = new DatagramPacket(new byte[Constants.IMAGE_CHUNK_SIZE], Constants.IMAGE_CHUNK_SIZE);
-        if (isMultiHost) UNICAST_SOCKET.setSoTimeout(3000);
-        else socket.setSoTimeout(3000);
+        if (isMultiHost){
+
+            UNICAST_SOCKET.setSoTimeout(3000);
+        }
+        else {
+            socket.setSoTimeout(3000);
+        }
 
         while (true) {
             try {
@@ -205,7 +210,9 @@ public class Client extends JPanel implements ActionListener {
                 if(isMultiHost) {
                     UNICAST_SOCKET.receive(incomingFrame);
                     System.out.println("Packet forwarded");
-                    mcForward.send(incomingFrame);
+                    byte [] incData = incomingFrame.getData();
+                    DatagramPacket forwardPacket = new DatagramPacket(incData, incData.length, group, Constants.MULTICAST_PORT);
+                    mcForward.send(forwardPacket);
                 }
                 else socket.receive(incomingFrame);
                 streamOver = false;
