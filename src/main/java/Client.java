@@ -110,6 +110,7 @@ public class Client extends JPanel implements ActionListener {
 
     void connectToHost() throws IOException {
         //connect to connectionIP
+        group = InetAddress.getByName(Constants.IP_MULTICAST);
         socket = new MulticastSocket(Constants.MULTICAST_PORT);
         socket.setTimeToLive(25);
         socket.joinGroup(group);
