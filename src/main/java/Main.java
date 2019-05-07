@@ -142,6 +142,7 @@ public class Main extends JFrame {
                     });
 
                     serverThread.start();
+
                 } else {
 
                     passwordField.setForeground(Color.RED);

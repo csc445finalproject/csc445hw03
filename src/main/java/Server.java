@@ -1,3 +1,4 @@
+import Encryption.AES;
 import com.github.sarxos.webcam.*;
 
 import javax.imageio.IIOImage;
@@ -28,6 +29,7 @@ public class Server {
     private DatagramSocket socket;
     private boolean cameraOpen;
     private String roomPassword;
+    private AES aes;
 
     private ImageWriter writer;
     private ImageWriteParam jpgWriteParam;
@@ -46,6 +48,7 @@ public class Server {
     public Server(String ip, String roomPassword) throws SocketException {
 
         this.roomPassword = roomPassword;
+        aes = new AES();
 
         socket = new DatagramSocket(Constants.UNICAST_PORT);
 
@@ -151,7 +154,9 @@ public class Server {
             buffer.get(imageChunkData);
 
             ImagePacket.ImageChunk chunk = new ImagePacket.ImageChunk(imageChunkData, numImagesTaken, i, shortChunks);
-            byte [] dataTosend = chunk.getBytes();
+
+            //ENCRYPT DATA RIGHT HERE
+            byte [] dataTosend = aes.encrypt(chunk.getBytes(), roomPassword.getBytes());
 
             DatagramPacket packet = new DatagramPacket(dataTosend, dataTosend.length, group, Constants.UNICAST_PORT);
 
