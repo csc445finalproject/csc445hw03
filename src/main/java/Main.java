@@ -1,74 +1,129 @@
+import Misc.Constants;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.Scanner;
 
 
-
-public class Main {
+public class Main extends JFrame {
 
 
     public static void main(String[] args) {
 
-        int role;
-        try {
-            role = Integer.parseInt(getInput("Type 0 for server, 1 for client: "));
-        } catch (NumberFormatException e) {
-            //server by default
-            role = 0;
-        }
+        JFrame mainFrame = new JFrame("CSC445hw03");
 
+        JPanel clientOptions = new JPanel();
+        JPanel serverOptions = new JPanel();
+        Border blackLine = BorderFactory.createLineBorder(Color.BLACK);
+        serverOptions.setBorder(blackLine);
 
-        //we are server
-        if (role == 0) {
+        JButton clientButton = new JButton("Launch Client");
+        clientButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
 
-            String name = getInput("Type server IP address: ");
+                mainFrame.setVisible(false);
+                mainFrame.dispose();
 
-            try {
-                Server server = new Server(name);
-            } catch (SocketException e) {
-                System.out.println("Socket exception for server");
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-                //yes I know this is garbage...
-                System.out.println("Webcam closed");
+                Thread clientThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            new Client();
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+
+                clientThread.start();
             }
+        });
 
+        clientOptions.add(clientButton);
 
+        JButton serverButton = new JButton("Launch Server");
 
-        //we are client
-        } else if (role == 1) {
+        JPanel unicastPanel = new JPanel();
+        JPanel multicastPanel = new JPanel();
 
-            try {
-                Client client = new Client();
+        ButtonGroup ipType = new ButtonGroup();
 
-            }catch (IOException e) {
-                e.printStackTrace();
+        JRadioButton unicastButton = new JRadioButton("Forward to client");
+        JTextField unicastDest = new JTextField(20);
+        unicastPanel.add(unicastButton);
+        unicastPanel.add(unicastDest);
+
+        String[] multicastAddr = {Constants.IP_MULTICAST};
+        JComboBox address = new JComboBox(multicastAddr);
+        address.setSelectedIndex(0);
+        JRadioButton multicastButton = new JRadioButton("Multicast", true);
+
+        multicastPanel.add(multicastButton);
+        multicastPanel.add(address);
+
+        serverButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                //get rid of this window in favour of the regular server window
+                mainFrame.setVisible(false);
+                mainFrame.dispose();
+
+                String addr;
+
+                if (unicastButton.isSelected()) {
+                    addr = unicastDest.getText();
+                } else {
+                    //get the section from the combo box
+                    addr = address.getSelectedItem().toString();
+                }
+
+                System.out.println("sending packets to: " + addr);
+                Thread serverThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            new Server(addr);
+                        } catch (SocketException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+
+                serverThread.start();
             }
+        });
 
-        }
+
+        ipType.add(multicastButton);
+        ipType.add(unicastButton);
+
+        serverOptions.add(unicastPanel);
+        serverOptions.add(multicastPanel);
+        serverOptions.add(serverButton, BorderLayout.SOUTH);
+
+        mainFrame.add(clientOptions, BorderLayout.SOUTH);
+        mainFrame.add(serverOptions, BorderLayout.NORTH);
+
+        mainFrame.setVisible(true);
+        mainFrame.pack();
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     }
 
-
-
-
-
-
-    //return input for a given message
-    public static String getInput(String message) {
-        System.out.print(message);
-        return (new Scanner(System.in)).nextLine();
-    }
 
     public static String printExternalIP() throws UnknownHostException {
         String systemipaddress;
-        try
-        {
+        try {
             URL url_name = new URL("http://bot.whatismyipaddress.com");
             BufferedReader sc = new BufferedReader(new InputStreamReader(url_name.openStream()));
             systemipaddress = sc.readLine().trim();

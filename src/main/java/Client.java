@@ -77,7 +77,7 @@ public class Client extends JFrame implements ActionListener {
     }
 
     public void initializeGUI() throws IOException {
-        frame = new JFrame("csc445hw03");
+        frame = new JFrame("csc445hw03 Client");
         frame.setSize(new Dimension(400, 600));
         imagePanel = new JPanel();
         textPanel = new JPanel();

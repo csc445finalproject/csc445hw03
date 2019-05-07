@@ -48,19 +48,7 @@ public class Server {
         socket = new DatagramSocket(Constants.UNICAST_PORT);
 
         try {
-
-            if (ip.equals("m")) {
-                //if we want multicast, send right to the multicast socket
-                System.out.println("Directly multicasting");
-                group = InetAddress.getByName(Constants.IP_MULTICAST);
-            } else {
-                // if an IP address is entered (in our case, pi or rho or whatever server we choose)
-                // then we forward everything there, and let them handle the multicast
-                System.out.println("Sending to " + ip + " and letting them handle the multicast");
-                group = InetAddress.getByName(ip);
-                // I think in this case, we pass to a new class
-            }
-
+            group = InetAddress.getByName(ip);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
@@ -109,7 +97,7 @@ public class Server {
         panel.setImageSizeDisplayed(true);
         panel.setMirrored(true);
 
-        JFrame window = new JFrame("Test webcam panels");
+        JFrame window = new JFrame("Stream view");
         window.add(panel);
         window.setResizable(true);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
