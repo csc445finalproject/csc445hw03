@@ -155,7 +155,7 @@ public class Client extends JFrame implements ActionListener {
     }
 
 
-    void forwardFromHostToMcast(String mcastAddr) throws IOException {
+    void connectToMcastSocket(String mcastAddr) throws IOException {
         //connect to connectionIP
         group = InetAddress.getByName(mcastAddr);
         socket = new MulticastSocket(Constants.MULTICAST_PORT);
@@ -165,7 +165,7 @@ public class Client extends JFrame implements ActionListener {
         System.out.println("waiting for a video feed...");
     }
 
-    void connectToMcastSocket(String mcastAddr) throws IOException {
+    void forwardFromHostToMcast(String mcastAddr) throws IOException {
 
         group = InetAddress.getByName(mcastAddr);
         UNICAST_SOCKET = new DatagramSocket(Constants.UNICAST_PORT);
