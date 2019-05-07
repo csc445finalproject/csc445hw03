@@ -46,6 +46,7 @@ public class Server {
     public Server(String ip, String roomPassword) throws SocketException {
 
         this.roomPassword = roomPassword;
+
         socket = new DatagramSocket(Constants.UNICAST_PORT);
 
         try {
