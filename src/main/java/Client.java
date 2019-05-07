@@ -3,6 +3,8 @@ import Misc.Constants;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
@@ -14,7 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
-public class Client extends JPanel implements ActionListener {
+public class Client extends JFrame implements ActionListener {
+
+    /*
+    BACK END COMPONANTS
+     */
 
 
     final int imageQueueSize = 100;
@@ -25,27 +31,43 @@ public class Client extends JPanel implements ActionListener {
     ConcurrentHashMap<Integer, ImagePacket> images = new ConcurrentHashMap<Integer, ImagePacket>();
     BlockingQueue<ImagePacket> imageQueue = new ArrayBlockingQueue<ImagePacket>(imageQueueSize);
 
-    JFrame frame;
-    JPanel panels;
-    JPanel imagePanel;
-    JPanel textPanel;
-
-    JLabel imageLabel;
-    BufferedImage image;
-    ImageIcon imageIcon;
-
-    JTextField ipTextField;
-
-    JTextField passwordField;
-
-    JButton connectButton;
-
     MulticastSocket socket;
     DatagramSocket UNICAST_SOCKET, mcForward;
 
     boolean streamOver, isMultiHost;
 
     InetAddress group;
+
+    String passcode;
+    String myIp = Main.printExternalIP();
+
+
+
+    /*
+
+    GUI COMPONANTS
+     */
+
+    JFrame frame;
+    JPanel panels;
+    JPanel imagePanel;
+    JPanel forwardingPanel;
+    JPanel textPanel;
+
+    JLabel imageLabel;
+    BufferedImage image;
+    ImageIcon imageIcon;
+
+    ButtonGroup forwardingOptions;
+    JRadioButton isForwarder;
+    JRadioButton isMcastClient;
+    JComboBox multicastPort;
+
+    JTextField passwordField;
+
+    JButton connectButton;
+
+
 
 
     public Client() throws IOException {
@@ -60,6 +82,7 @@ public class Client extends JPanel implements ActionListener {
         imagePanel = new JPanel();
         textPanel = new JPanel();
 
+        //configure all of the image displaying stuff
         imageLabel = new JLabel();
         image = ImageIO.read(new File("WaitingForStream.jpg"));
         imageIcon = new ImageIcon(image);
@@ -69,13 +92,35 @@ public class Client extends JPanel implements ActionListener {
         imageLabel.setVerticalAlignment(JLabel.CENTER);
 
 
-        ipTextField = new JTextField(50);
-        ipTextField.setText("Enter host IP address");
-        ipTextField.setToolTipText("Enter host IP address");
+        forwardingPanel = new JPanel();
+        forwardingOptions = new ButtonGroup();
+
+        isForwarder = new JRadioButton("Forwarder", true);
+        isMcastClient = new JRadioButton("Regular client");
+        forwardingOptions.add(isForwarder);
+        forwardingOptions.add(isMcastClient);
+
+
+        String [] multicastPorts = {Constants.IP_MULTICAST};
+        multicastPort = new JComboBox(multicastPorts);
+        multicastPort.setSelectedIndex(0);
+
+        forwardingPanel.add(new JLabel("My IP: " + myIp + "     "), BorderLayout.NORTH);
+        forwardingPanel.add(isForwarder, BorderLayout.LINE_START);
+        forwardingPanel.add(isMcastClient, BorderLayout.CENTER);
+        forwardingPanel.add(multicastPort, BorderLayout.LINE_END);
+
+
 
         passwordField = new JTextField(50);
         passwordField.setText("Enter room password");
         passwordField.setToolTipText("Enter room password");
+        //remove the default text when pressed
+        passwordField.addFocusListener(new FocusAdapter() {
+            public void focusGained(FocusEvent e) {
+                passwordField.setText("");
+            }
+        });
 
         connectButton = new JButton("Connect");
         connectButton.addActionListener(this);
@@ -93,7 +138,9 @@ public class Client extends JPanel implements ActionListener {
         //add the image
         imagePanel.add(imageLabel);
 
-        textPanel.add(ipTextField, BorderLayout.NORTH);
+
+
+        textPanel.add(forwardingPanel, BorderLayout.NORTH);
         textPanel.add(passwordField, BorderLayout.CENTER);
         textPanel.add(connectButton, BorderLayout.SOUTH);
 
@@ -108,9 +155,9 @@ public class Client extends JPanel implements ActionListener {
     }
 
 
-    void connectToHost() throws IOException {
+    void forwardFromHostToMcast(String mcastAddr) throws IOException {
         //connect to connectionIP
-        group = InetAddress.getByName(Constants.IP_MULTICAST);
+        group = InetAddress.getByName(mcastAddr);
         socket = new MulticastSocket(Constants.MULTICAST_PORT);
         socket.setTimeToLive(25);
         socket.joinGroup(group);
@@ -118,12 +165,9 @@ public class Client extends JPanel implements ActionListener {
         System.out.println("waiting for a video feed...");
     }
 
-    void connectToHost(String ip) throws IOException {
-//        socket = new MulticastSocket(Constants.UNICAST_PORT);
-//        socket.setTimeToLive(25);
-//        InetAddress group = InetAddress.getByName(ip);
-//        socket.joinGroup(group);
-        group = InetAddress.getByName(Constants.IP_MULTICAST);
+    void connectToMcastSocket(String mcastAddr) throws IOException {
+
+        group = InetAddress.getByName(mcastAddr);
         UNICAST_SOCKET = new DatagramSocket(Constants.UNICAST_PORT);
         mcForward = new DatagramSocket(Constants.MULTICAST_PORT);
         isMultiHost = true;
@@ -221,8 +265,21 @@ public class Client extends JPanel implements ActionListener {
                 //e.printStackTrace();
                 streamOver = true;
                 updateVideo.interrupt();
-                if(isMultiHost) UNICAST_SOCKET.close();
-                else socket.close();
+
+                if(isMultiHost) {
+
+                    //close both unicast socket and forwarding socket
+                    UNICAST_SOCKET.close();
+                    mcForward.close();
+                }
+
+                else {
+                    //only close multicastSocket
+                    socket.close();
+                }
+
+                connectButton.setEnabled(true);
+                connectButton.setText("Connect");
                 break;
             }
 
@@ -262,21 +319,27 @@ public class Client extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         //when the connect button is pressed
 
-        System.out.println("Connecting to " + ipTextField.getText());
-
         receiveVideo = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
 
                     //join the appropriate socket
-                    if (ipTextField.getText().equals("forwarder")) {
-                        System.out.println("Connecting to multicast socket: " + Constants.IP_MULTICAST);
-                        connectToHost(ipTextField.getText());
+                    if (isMcastClient.isSelected()) {
+
+                        //is a client
+                        System.out.println("Connecting to multicast socket: " + multicastPort.getSelectedItem().toString());
+                        connectToMcastSocket(multicastPort.getSelectedItem().toString());
                     } else {
-                        System.out.println("Connecting to: " + ipTextField.getText());
-                        connectToHost();
+
+                        //is forwarding packets to mcast address
+                        System.out.println("Ready to forward packets to: " + multicastPort.getSelectedItem().toString());
+                        forwardFromHostToMcast(multicastPort.getSelectedItem().toString());
                     }
+
+                    //get the passcode from the user
+                    passcode = passwordField.getText();
+                    System.out.println("Passcode: " + passcode);
 
                     //listen continuously for video packets being sent in
                     receiveVideo();
@@ -301,6 +364,8 @@ public class Client extends JPanel implements ActionListener {
         });
 
 
+        connectButton.setEnabled(false);
+        connectButton.setText("Connection in progress...");
         receiveVideo.start();
         updateVideo.start();
 

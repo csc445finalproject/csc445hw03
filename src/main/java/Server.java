@@ -129,7 +129,9 @@ public class Server {
         }
 
         //tell clients there is no more stream
-        tellClientsClosed();
+        //tellClientsClosed();
+
+        // rather than doing ^^ , we simply stop streaming, and the clients will timeout and will figure out there is no more stream
 
     }
 
