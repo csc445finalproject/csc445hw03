@@ -45,7 +45,7 @@ public class Client extends JPanel implements ActionListener {
 
     boolean streamOver, isMultiHost;
 
-    static InetAddress group;
+    InetAddress group;
 
 
     public Client() throws IOException {
@@ -123,9 +123,9 @@ public class Client extends JPanel implements ActionListener {
 //        socket.setTimeToLive(25);
 //        InetAddress group = InetAddress.getByName(ip);
 //        socket.joinGroup(group);
-
+        group = InetAddress.getByName(Constants.IP_MULTICAST);
         UNICAST_SOCKET = new DatagramSocket(Constants.UNICAST_PORT);
-        mcForward = new DatagramSocket(Constants.MULTICAST_PORT);
+        mcForward = new DatagramSocket(Constants.MULTICAST_PORT, group);
         isMultiHost = true;
         System.out.println("waiting for a video feed...");
     }
