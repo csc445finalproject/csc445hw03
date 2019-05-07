@@ -116,7 +116,6 @@ public class Main extends JFrame {
 
         mainFrame.setVisible(true);
         mainFrame.pack();
-        mainFrame.setResizable(false);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     }
