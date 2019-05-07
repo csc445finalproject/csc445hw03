@@ -174,7 +174,7 @@ public class Client extends JPanel implements ActionListener {
             }
         }
     }
-    
+
     /*
 
     purpose of this function is to continuously listen for datagram packets, and whenever we receive a packet,
@@ -262,7 +262,7 @@ public class Client extends JPanel implements ActionListener {
                 try {
 
                     //join the appropriate socket
-                    if (ipTextField.getText().equals("") || ipTextField.getText() == null) {
+                    if (ipTextField.getText().equals("forwarder")) {
                         System.out.println("Connecting to multicast socket: " + Constants.IP_MULTICAST);
                         connectToHost();
                     } else {
