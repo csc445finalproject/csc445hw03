@@ -44,6 +44,8 @@ public class Client extends JPanel implements ActionListener {
     MulticastSocket socket;
     DatagramSocket UNICAST_SOCKET;
 
+    boolean streamOver;
+
 
     public Client() throws IOException {
 
@@ -58,7 +60,7 @@ public class Client extends JPanel implements ActionListener {
         textPanel = new JPanel();
 
         imageLabel = new JLabel();
-        image = ImageIO.read(new File("pep.jpg"));
+        image = ImageIO.read(new File("WaitingForStream.jpg"));
         imageIcon = new ImageIcon(image);
         imageLabel.setIcon(imageIcon);
         imageLabel.setMinimumSize(new Dimension(500, 500));
@@ -152,7 +154,19 @@ public class Client extends JPanel implements ActionListener {
                 Thread.sleep(15);
             } catch (InterruptedException e) {
                 System.out.println("Time to update the display!");
-                //e.printStackTrace();
+
+                if (streamOver) {
+                    try {
+                        image = ImageIO.read(new File("WaitingForStream.jpg"));
+                    } catch (IOException e1) {
+                        System.out.println("Image not found");
+                    }
+
+                    imageIcon = new ImageIcon(image);
+                    imageLabel.setIcon(imageIcon);
+                    System.out.println("Stream ended");
+                    break;
+                }
             }
         }
     }
@@ -166,7 +180,7 @@ public class Client extends JPanel implements ActionListener {
      */
 
 
-    void receiveVideo() {
+    void receiveVideo() throws IOException {
 
          /*
 
@@ -178,13 +192,20 @@ public class Client extends JPanel implements ActionListener {
          */
 
         DatagramPacket incomingFrame = new DatagramPacket(new byte[Constants.IMAGE_CHUNK_SIZE], Constants.IMAGE_CHUNK_SIZE);
+        UNICAST_SOCKET.setSoTimeout(3000);
 
         while (true) {
             try {
                 //socket.receive(incomingFrame);
                 UNICAST_SOCKET.receive(incomingFrame);
-            } catch (IOException e) {
-                e.printStackTrace();
+                streamOver = false;
+            } catch (SocketTimeoutException e) {
+                //The host has ended their stream (probably)
+                //e.printStackTrace();
+                streamOver = true;
+                updateVideo.interrupt();
+                UNICAST_SOCKET.close();
+                break;
             }
 
             byte[] data = incomingFrame.getData();
@@ -211,7 +232,6 @@ public class Client extends JPanel implements ActionListener {
             }
 
             //tell the update video function that we just processed something, and display something new
-
         }
 
 
