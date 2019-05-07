@@ -1,5 +1,7 @@
 package Encryption;
 
+import Misc.Constants;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -12,15 +14,15 @@ public class AES {
 
     private SecretKeySpec secretKey;
 
-    private void setKey(byte [] pWord, String algorithm){
-        secretKey = new SecretKeySpec(pWord, algorithm);
+    private void setKey(byte [] pWord){
+        secretKey = new SecretKeySpec(pWord, Constants.ALGORITHM);
     }
 
-    public byte [] encrypt(byte [] packetBytes, byte[] pWord, String algorithm, String extAlgorithm){
+    public byte [] encrypt(byte [] packetBytes, byte[] pWord){
 
-        setKey(pWord, algorithm);
+        setKey(pWord);
         try {
-            Cipher cipher = Cipher.getInstance(extAlgorithm);
+            Cipher cipher = Cipher.getInstance(Constants.EXT_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             return cipher.doFinal(packetBytes);
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
@@ -31,11 +33,11 @@ public class AES {
         return null;
     }
 
-    public byte [] decrypt(byte [] packetBytes, byte [] pWord, String algorithm, String extAlgorithm){
-        setKey(pWord, algorithm);
+    public byte [] decrypt(byte [] packetBytes, byte [] pWord){
+        setKey(pWord);
 
         try{
-            Cipher cipher = Cipher.getInstance(extAlgorithm);
+            Cipher cipher = Cipher.getInstance(Constants.EXT_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
             return cipher.doFinal(packetBytes);
         } catch (Exception e){
