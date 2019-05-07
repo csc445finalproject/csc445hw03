@@ -10,7 +10,7 @@ public class MulticastClient {
     private static byte [] messageBuffer = new byte[Constants.BUFFER_SIZE];
 
     public static void main(String[] args) throws IOException{
-        socket = new MulticastSocket(Constants.PORT);
+        socket = new MulticastSocket(Constants.UNICAST_PORT);
         InetAddress group = InetAddress.getByName(Constants.IP_MULTICAST);
         socket.joinGroup(group);
         socket.setTimeToLive(25);

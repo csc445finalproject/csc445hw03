@@ -13,7 +13,7 @@ public class MulticastPublisher {
     // might have to build a cache on here from receiving packets from other host if the jumbo packets don't work.
     public static void main(String [] args) throws IOException{
         mcSocket = new DatagramSocket();
-        inputSocket = new DatagramSocket(Constants.PORT);
+        inputSocket = new DatagramSocket(Constants.UNICAST_PORT);
         InetAddress group = InetAddress.getByName(Constants.IP_MULTICAST);
 
         DatagramPacket incPacket = new DatagramPacket(buf, buf.length);
@@ -24,7 +24,7 @@ public class MulticastPublisher {
             // For now the publisher only sends one message at a time, client listens as long as he wants
             // probably want gui to handle things like leaving the group and invoking a method for this
             messageBytes = incPacket.getData();
-            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length, group, Constants.PORT);
+            DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length, group, Constants.UNICAST_PORT);
             mcSocket.send(packet);
         }
     }

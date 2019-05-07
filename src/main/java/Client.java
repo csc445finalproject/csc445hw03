@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -111,7 +110,7 @@ public class Client extends JPanel implements ActionListener {
 
     void connectToHost() throws IOException {
         //connect to connectionIP
-        socket = new MulticastSocket(Constants.PORT);
+        socket = new MulticastSocket(Constants.MULTICAST_PORT);
         socket.setTimeToLive(25);
         socket.joinGroup(group);
         isMultiHost = false;
@@ -119,13 +118,13 @@ public class Client extends JPanel implements ActionListener {
     }
 
     void connectToHost(String ip) throws IOException {
-//        socket = new MulticastSocket(Constants.PORT);
+//        socket = new MulticastSocket(Constants.UNICAST_PORT);
 //        socket.setTimeToLive(25);
 //        InetAddress group = InetAddress.getByName(ip);
 //        socket.joinGroup(group);
 
-        UNICAST_SOCKET = new DatagramSocket(Constants.PORT);
-        mcForward = new DatagramSocket(Constants.PORT);
+        UNICAST_SOCKET = new DatagramSocket(Constants.UNICAST_PORT);
+        mcForward = new DatagramSocket(Constants.MULTICAST_PORT);
         isMultiHost = true;
         System.out.println("waiting for a video feed...");
     }

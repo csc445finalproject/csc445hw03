@@ -45,7 +45,7 @@ public class Server {
     public Server(String ip) throws SocketException {
 
 
-        socket = new DatagramSocket(Constants.PORT);
+        socket = new DatagramSocket(Constants.UNICAST_PORT);
 
         try {
 
@@ -161,7 +161,7 @@ public class Server {
             ImagePacket.ImageChunk chunk = new ImagePacket.ImageChunk(imageChunkData, numImagesTaken, i, shortChunks);
             byte [] dataTosend = chunk.getBytes();
 
-            DatagramPacket packet = new DatagramPacket(dataTosend, dataTosend.length, group, Constants.PORT);
+            DatagramPacket packet = new DatagramPacket(dataTosend, dataTosend.length, group, Constants.UNICAST_PORT);
 
             socket.send(packet);
         }

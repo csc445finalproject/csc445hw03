@@ -17,7 +17,7 @@ public class SimpleClient {
             byte [] garbage = new byte[512];
 
             socket = new DatagramSocket();
-            DatagramPacket packet = new DatagramPacket(garbage, garbage.length, address, Constants.PORT);
+            DatagramPacket packet = new DatagramPacket(garbage, garbage.length, address, Constants.UNICAST_PORT);
             for (int i = 0; i < 1000000; i++) {
                 System.out.println("Sending packet #: " + i);
                 socket.send(packet);
