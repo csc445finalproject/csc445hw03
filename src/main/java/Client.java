@@ -402,12 +402,8 @@ public class Client extends JFrame implements ActionListener {
         updateVideo = new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
                     //start displaying whatever is available in the queue
                     updateDisplay();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
