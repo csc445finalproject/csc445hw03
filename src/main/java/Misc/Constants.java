@@ -9,6 +9,7 @@ public class Constants {
     public static final int BUFFER_SIZE = 1024;
     public static final String ALGORITHM = "AES";
     public static final String EXT_ALGORITHM = "AES/ECB/PKCS5Padding";
+    public static final int KEY_SIZE = 16;
 
     public static final int IMAGE_CHUNK_SIZE = BUFFER_SIZE + Integer.BYTES + (2 * Short.BYTES);
 

@@ -10,6 +10,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 public class AES {
 
@@ -20,9 +21,10 @@ public class AES {
     }
 
     public byte [] encrypt(byte [] packetBytes, byte[] pWord){
-        ByteBuffer buffer = ByteBuffer.allocate(128);
+        ByteBuffer buffer = ByteBuffer.allocate(Constants.KEY_SIZE);
         buffer.put(pWord);
         setKey(buffer.array());
+
         try {
             Cipher cipher = Cipher.getInstance(Constants.EXT_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -36,7 +38,7 @@ public class AES {
     }
 
     public byte [] decrypt(byte [] packetBytes, byte [] pWord){
-        ByteBuffer buffer = ByteBuffer.allocate(128);
+        ByteBuffer buffer = ByteBuffer.allocate(Constants.KEY_SIZE);
         buffer.put(pWord);
         setKey(buffer.array());
 
