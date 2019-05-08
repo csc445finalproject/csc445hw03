@@ -171,7 +171,6 @@ public class Server {
 
         //TODO: send some sort of escape sequence to multicast socket signaling that the broadcast is over
         webcam.close();
-        System.out.println("Closing feed");
     }
 
 
@@ -184,7 +183,6 @@ public class Server {
         writer.setOutput(outputStream);
         writer.write(null, new IIOImage(image, null,null), jpgWriteParam);
         byte [] compressedImg = baos.toByteArray();
-        System.out.println("Took image");
 
         numImagesTaken++;
         return compressedImg;
