@@ -123,6 +123,7 @@ public class Client extends JFrame implements ActionListener {
         passwordField.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 passwordField.setText("");
+                passwordField.setBackground(Color.BLACK);
             }
         });
 
@@ -232,6 +233,7 @@ public class Client extends JFrame implements ActionListener {
 
                     passwordField.setBackground(Color.RED);
                     passwordField.setText("Password Incorrect");
+                    passwordField.setEnabled(true);
                     break;
                 }
             }
@@ -326,8 +328,12 @@ public class Client extends JFrame implements ActionListener {
                     socket.close();
                 }
 
-                connectButton.setEnabled(true);
+
                 passwordField.setEnabled(true);
+                passwordField.setBackground(Color.RED);
+                passwordField.setText("Password Incorrect");
+
+                connectButton.setEnabled(true);
                 connectButton.setText("Connect");
                 break;
             }
