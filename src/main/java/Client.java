@@ -323,7 +323,7 @@ public class Client extends JFrame implements ActionListener {
 
 
                 passwordField.setEnabled(true);
-                passwordField.setBackground(Color.RED);
+                passwordField.setForeground(Color.RED);
                 passwordField.setText("Password Incorrect");
 
                 connectButton.setEnabled(true);
