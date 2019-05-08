@@ -1,6 +1,6 @@
-package Encryption;
-
 import Misc.Constants;
+
+
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -10,7 +10,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 public class AES {
 
@@ -47,7 +46,7 @@ public class AES {
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
             return cipher.doFinal(packetBytes);
         } catch (Exception e){
-            e.printStackTrace();
+            Client.passwordCorrect = false;
         }
         return null;
     }

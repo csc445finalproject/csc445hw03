@@ -1,4 +1,3 @@
-import Encryption.AES;
 import Misc.Constants;
 
 import java.awt.*;
@@ -36,6 +35,8 @@ public class Client extends JFrame implements ActionListener {
     DatagramSocket UNICAST_SOCKET, mcForward;
 
     boolean streamOver, isMultiHost;
+
+    public static boolean passwordCorrect = true;
 
     InetAddress group;
 
@@ -181,7 +182,7 @@ public class Client extends JFrame implements ActionListener {
 
     //purpose of this function is to update the display whenever the receive video function has received enough frames
 
-    void updateDisplay() throws IOException {
+    void updateDisplay() {
 
 
         while (true) {
@@ -216,6 +217,21 @@ public class Client extends JFrame implements ActionListener {
                     imageIcon = new ImageIcon(image);
                     imageLabel.setIcon(imageIcon);
                     System.out.println("Stream ended");
+                    break;
+                } else if (!passwordCorrect) {
+
+                    try {
+                        image = ImageIO.read(new File("WaitingForStream.jpg"));
+                    } catch (IOException e1) {
+                        System.out.println("Image not found");
+                    }
+
+                    imageIcon = new ImageIcon(image);
+                    imageLabel.setIcon(imageIcon);
+                    System.out.println("Password incorrect");
+
+                    passwordField.setBackground(Color.RED);
+                    passwordField.setText("Password Incorrect");
                     break;
                 }
             }
@@ -287,6 +303,29 @@ public class Client extends JFrame implements ActionListener {
                 break;
             }
 
+            if (!passwordCorrect) {
+
+                streamOver = true;
+                updateVideo.interrupt();
+
+                if(isMultiHost) {
+
+                    //close both unicast socket and forwarding socket
+                    UNICAST_SOCKET.close();
+                    mcForward.close();
+                }
+
+                else {
+                    //only close multicastSocket
+                    socket.close();
+                }
+
+                connectButton.setEnabled(true);
+                passwordField.setEnabled(true);
+                connectButton.setText("Connect");
+                break;
+            }
+
             byte[] data = incomingFrame.getData();
 
             byte [] decryptedData = aes.decrypt(data, passcode.getBytes());
@@ -313,7 +352,7 @@ public class Client extends JFrame implements ActionListener {
                 images.get(imageChunk.imageNum).addChunk(chunkBytes, imageNum, order, numChunks);
             }
 
-            //tell the update video function that we just processed something, and display something new
+
         }
 
 

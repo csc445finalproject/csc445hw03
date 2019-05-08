@@ -1,4 +1,3 @@
-import Encryption.AES;
 import com.github.sarxos.webcam.*;
 
 import javax.imageio.IIOImage;
