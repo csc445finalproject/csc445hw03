@@ -68,7 +68,6 @@ public class Server {
 
         public void run() {
             try {
-                System.out.println("took image");
                 sendImage(captureImage());
             } catch (IOException e) {
                 System.out.println("Program closed");

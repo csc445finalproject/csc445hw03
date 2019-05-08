@@ -123,7 +123,7 @@ public class Client extends JFrame implements ActionListener {
         passwordField.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 passwordField.setText("");
-                passwordField.setBackground(Color.BLACK);
+                passwordField.setForeground(Color.BLACK);
             }
         });
 
