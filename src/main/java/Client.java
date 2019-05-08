@@ -225,7 +225,7 @@ public class Client extends JFrame implements ActionListener {
                     imageIcon = new ImageIcon(image);
                     imageLabel.setIcon(imageIcon);
 
-                    passwordField.setBackground(Color.RED);
+                    passwordField.setForeground(Color.RED);
                     passwordField.setText("Password Incorrect");
                     passwordField.setEnabled(true);
                     break;
