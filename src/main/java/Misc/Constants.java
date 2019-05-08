@@ -13,6 +13,8 @@ public class Constants {
 
     public static final int IMAGE_CHUNK_SIZE = BUFFER_SIZE + Integer.BYTES + (2 * Short.BYTES);
 
+    public static final int ENCRYPTED_CHUNKSIZE = IMAGE_CHUNK_SIZE + 8;
+
 
     public static final int BIG_TEST_BUFFER = 10000;
 

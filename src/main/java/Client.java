@@ -242,7 +242,7 @@ public class Client extends JFrame implements ActionListener {
 
          */
 
-        DatagramPacket incomingFrame = new DatagramPacket(new byte[Constants.IMAGE_CHUNK_SIZE], Constants.IMAGE_CHUNK_SIZE);
+        DatagramPacket incomingFrame = new DatagramPacket(new byte[Constants.ENCRYPTED_CHUNKSIZE], Constants.ENCRYPTED_CHUNKSIZE);
         if (isMultiHost){
 
             UNICAST_SOCKET.setSoTimeout(3000);
