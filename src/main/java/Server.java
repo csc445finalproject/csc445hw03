@@ -71,7 +71,7 @@ public class Server {
                 System.out.println("took image");
                 sendImage(captureImage());
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("Program closed");
             }
         }
 
