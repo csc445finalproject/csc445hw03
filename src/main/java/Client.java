@@ -390,6 +390,7 @@ public class Client extends JFrame implements ActionListener {
                     passcode = passwordField.getText();
 
                     passwordField.setEnabled(false);
+                    passwordField.setForeground(Color.BLACK);
 
                     //listen continuously for video packets being sent in
                     receiveVideo();
