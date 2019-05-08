@@ -7,6 +7,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
@@ -19,8 +20,9 @@ public class AES {
     }
 
     public byte [] encrypt(byte [] packetBytes, byte[] pWord){
-
-        setKey(pWord);
+        ByteBuffer buffer = ByteBuffer.allocate(128);
+        buffer.put(pWord);
+        setKey(buffer.array());
         try {
             Cipher cipher = Cipher.getInstance(Constants.EXT_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -34,7 +36,9 @@ public class AES {
     }
 
     public byte [] decrypt(byte [] packetBytes, byte [] pWord){
-        setKey(pWord);
+        ByteBuffer buffer = ByteBuffer.allocate(128);
+        buffer.put(pWord);
+        setKey(buffer.array());
 
         try{
             Cipher cipher = Cipher.getInstance(Constants.EXT_ALGORITHM);
