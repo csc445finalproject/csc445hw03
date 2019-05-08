@@ -303,6 +303,14 @@ public class Client extends JFrame implements ActionListener {
                 break;
             }
 
+
+
+            byte[] data = incomingFrame.getData();
+
+            byte [] decryptedData = aes.decrypt(data, passcode.getBytes());
+
+            ByteBuffer buffer = ByteBuffer.wrap(decryptedData);
+
             if (!passwordCorrect) {
 
                 streamOver = true;
@@ -325,12 +333,6 @@ public class Client extends JFrame implements ActionListener {
                 connectButton.setText("Connect");
                 break;
             }
-
-            byte[] data = incomingFrame.getData();
-
-            byte [] decryptedData = aes.decrypt(data, passcode.getBytes());
-
-            ByteBuffer buffer = ByteBuffer.wrap(decryptedData);
 
             int imageNum = buffer.getInt();
             short order = buffer.getShort();
@@ -393,8 +395,7 @@ public class Client extends JFrame implements ActionListener {
                     receiveVideo();
 
                 } catch (IOException e1) {
-                    e1.printStackTrace();
-
+                    passwordCorrect = false;
                 }
             }
         });
