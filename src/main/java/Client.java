@@ -167,7 +167,6 @@ public class Client extends JFrame implements ActionListener {
         socket.setTimeToLive(25);
         socket.joinGroup(group);
         isMultiHost = false;
-        System.out.println("waiting for a video feed...");
     }
 
     void forwardFromHostToMcast(String mcastAddr) throws IOException {
@@ -176,7 +175,6 @@ public class Client extends JFrame implements ActionListener {
         UNICAST_SOCKET = new DatagramSocket(Constants.UNICAST_PORT);
         mcForward = new DatagramSocket(Constants.MULTICAST_PORT);
         isMultiHost = true;
-        System.out.println("waiting for a video feed...");
     }
 
 
@@ -187,7 +185,6 @@ public class Client extends JFrame implements ActionListener {
 
 
         while (true) {
-            System.out.println("Updating display");
 
             //this if statement will make sure we have buffered a few images before we begin updating the images
             if ((imageQueueSize - imageQueue.remainingCapacity()) > 5) {
@@ -206,7 +203,6 @@ public class Client extends JFrame implements ActionListener {
             try {
                 Thread.sleep(15);
             } catch (InterruptedException e) {
-                System.out.println("Time to update the display!");
 
                 if (streamOver) {
                     try {
@@ -217,7 +213,6 @@ public class Client extends JFrame implements ActionListener {
 
                     imageIcon = new ImageIcon(image);
                     imageLabel.setIcon(imageIcon);
-                    System.out.println("Stream ended");
                     break;
                 } else if (!passwordCorrect) {
 
@@ -229,7 +224,6 @@ public class Client extends JFrame implements ActionListener {
 
                     imageIcon = new ImageIcon(image);
                     imageLabel.setIcon(imageIcon);
-                    System.out.println("Password incorrect");
 
                     passwordField.setBackground(Color.RED);
                     passwordField.setText("Password Incorrect");
@@ -274,7 +268,6 @@ public class Client extends JFrame implements ActionListener {
                 //socket.receive(incomingFrame);
                 if(isMultiHost) {
                     UNICAST_SOCKET.receive(incomingFrame);
-                    System.out.println("Packet forwarded");
                     byte [] incData = incomingFrame.getData();
                     DatagramPacket forwardPacket = new DatagramPacket(incData, incData.length, group, Constants.MULTICAST_PORT);
                     mcForward.send(forwardPacket);
@@ -386,18 +379,15 @@ public class Client extends JFrame implements ActionListener {
                     if (isMcastClient.isSelected()) {
 
                         //is a client
-                        System.out.println("Connecting to multicast socket: " + multicastPort.getSelectedItem().toString());
                         connectToMcastSocket(multicastPort.getSelectedItem().toString());
                     } else {
 
                         //is forwarding packets to mcast address
-                        System.out.println("Ready to forward packets to: " + multicastPort.getSelectedItem().toString());
                         forwardFromHostToMcast(multicastPort.getSelectedItem().toString());
                     }
 
                     //get the passcode from the user
                     passcode = passwordField.getText();
-                    System.out.println("Passcode: " + passcode);
 
                     passwordField.setEnabled(false);
 
