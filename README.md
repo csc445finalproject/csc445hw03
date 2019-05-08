@@ -38,12 +38,12 @@ In order to successfully run this application, the following things must occur.
 
 You must set a password (no longer than 16 characters) on the main page if you are the server. This will encrypt the video stream
 
-#####Situation a)
+##### Situation a)
 If the host computer can directly access the multicast address indicated on the initial page (230.12.123.4), 
 then select the multicast option from the initial page, set the password, and hit "launch server".
 
 
-#####Situation b)
+##### Situation b)
 If the host computer cannot directly access the multicast address indicated on the initial page (230.12.123.4),
 the select the "forward to client option" on the main page. In the textfield provided, enter the IP address of another client
 which CAN directly access the multicast socket, and is running this application, set a password, and hit "launch server".
@@ -52,10 +52,10 @@ which CAN directly access the multicast socket, and is running this application,
 The clients must be able to connect to the multicast address provided (230.12.123.4).
 In all cases, the clients select "Launch client" from the main screen, and then do the following: 
 
-#####Situation a)
+###### Situation a)
 If the host computer can send directly to the multicast socket OR another client is doing Situation b), then select regular client.
 
-#####Situation b)
+###### Situation b)
 If the host computer is streaming directly to your computer, then you must select the "Forwarder" option.
 
 
