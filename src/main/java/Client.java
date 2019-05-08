@@ -309,8 +309,6 @@ public class Client extends JFrame implements ActionListener {
 
             byte [] decryptedData = aes.decrypt(data, passcode.getBytes());
 
-            ByteBuffer buffer = ByteBuffer.wrap(decryptedData);
-
             if (!passwordCorrect) {
 
                 streamOver = true;
@@ -333,6 +331,10 @@ public class Client extends JFrame implements ActionListener {
                 connectButton.setText("Connect");
                 break;
             }
+            
+            ByteBuffer buffer = ByteBuffer.wrap(decryptedData);
+
+
 
             int imageNum = buffer.getInt();
             short order = buffer.getShort();
