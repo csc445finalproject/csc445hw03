@@ -44,6 +44,13 @@ public class Server {
     int numImagesTaken = 0;
 
 
+    /**
+     * Initializes server
+     *
+     * @param ip    The IP address we wish to stream to. Can be a multicast address or an individual computers IP addres.
+     * @param roomPassword  The password to encrypt/decrypt the data. All outgoing Data from the server will be encrypted using this password
+     * @throws SocketException  Throws if socket port is being used
+     */
     public Server(String ip, String roomPassword) throws SocketException {
 
         this.roomPassword = roomPassword;
@@ -63,7 +70,9 @@ public class Server {
     }
 
 
-
+    /**
+     * This class is used to send Images. When called in the startStream method, this function will be triggered every 'fireRate' ms.
+     */
     class WebcamSender implements Runnable {
 
         public void run() {
@@ -77,6 +86,9 @@ public class Server {
     }
 
 
+    /**
+     * Sets the compression level for the images being sent over the stream. By default 45% of original Jpeg quality is being used (as specified in imageQuality field)
+     */
     private void setCompressionLevel() {
         JPEGImageWriteParam jpegParams = new JPEGImageWriteParam(null);
         jpegParams.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
@@ -88,6 +100,9 @@ public class Server {
     }
 
 
+    /**
+     * Initializes a webcam instance, and allows the server to view whatever the webcam sees
+     */
     private void initializeWebcam() {
         webcam = Webcam.getDefault();
         webcam.setViewSize(new Dimension(320,240));
@@ -109,6 +124,10 @@ public class Server {
     }
 
 
+    /**
+     * Starts streaming to the appropriate destination. The videoHandler creates a new WebcamSender instance every 'fireRate' ms, in order to get a smooth
+     * stream of images. Keeps doing so until the server quits the application
+     */
     private void startStream() {
 
         //send messages at a fixed rate
@@ -119,14 +138,15 @@ public class Server {
             //wait for camera to close
         }
 
-        //tell clients there is no more stream
-        //tellClientsClosed();
-
-        // rather than doing ^^ , we simply stop streaming, and the clients will timeout and will figure out there is no more stream
-
     }
 
 
+    /**
+     * Sends an image to a client
+     *
+     * @param image A byte representation of the image to be sent. Note that the image will be divided into several chunks to be streamed
+     * @throws IOException If error sending the packet through the socket
+     */
 
     //Used to send an entire image over.
     //Note that the param image is the byte [] representing the ENTIRE IMAGE
@@ -165,13 +185,11 @@ public class Server {
     }
 
 
-
-    private void tellClientsClosed() {
-
-        //TODO: send some sort of escape sequence to multicast socket signaling that the broadcast is over
-        webcam.close();
-    }
-
+    /**
+     * Used to get a byte [] representation of the current webcam view. The image will be compressed at the level specified by the imageQuality field
+     * @return byte [] representation of the webcam view
+     * @throws IOException if image output stream fails
+     */
 
     //return compressed byte [] representation of the webcam view
     private byte [] captureImage() throws IOException {
