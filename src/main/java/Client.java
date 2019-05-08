@@ -331,7 +331,7 @@ public class Client extends JFrame implements ActionListener {
                 connectButton.setText("Connect");
                 break;
             }
-            
+
             ByteBuffer buffer = ByteBuffer.wrap(decryptedData);
 
 
@@ -368,6 +368,8 @@ public class Client extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         //when the connect button is pressed
+
+        passwordCorrect = true;
 
         receiveVideo = new Thread(new Runnable() {
             @Override
