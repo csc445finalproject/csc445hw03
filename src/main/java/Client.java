@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
+
 public class Client extends JFrame implements ActionListener {
 
     /*
@@ -72,14 +73,24 @@ public class Client extends JFrame implements ActionListener {
     JButton connectButton;
 
 
-
-
+    /**
+     * CONSTRUCTOR
+     *
+     * Initializes an AES object for decryption and encryption at an extremely fast pace, also
+     * generates a Gui that the user can interact with to either forawrd a video stream, or recieve
+     * a video stream
+     * @throws IOException
+     */
     public Client() throws IOException {
         aes = new AES();
         initializeGUI();
 
     }
 
+    /**
+     * This is the specific method that generates and initializes the GUI
+     * @throws IOException
+     */
     public void initializeGUI() throws IOException {
         frame = new JFrame("csc445hw03 Client");
         frame.setSize(new Dimension(400, 600));
@@ -160,6 +171,11 @@ public class Client extends JFrame implements ActionListener {
     }
 
 
+    /**
+     * This establishes a multicast connection to the specific multicat address
+     * @param mcastAddr - the multicast address that the IGMP agreed to use
+     * @throws IOException
+     */
     void connectToMcastSocket(String mcastAddr) throws IOException {
         //connect to connectionIP
         group = InetAddress.getByName(mcastAddr);
@@ -169,6 +185,13 @@ public class Client extends JFrame implements ActionListener {
         isMultiHost = false;
     }
 
+    /**
+     * Forwards the video stream to the multicast group, this was done because the
+     * computer with a webcam was separated by multiple switches and unable to directly
+     * connect to the multicast group
+     * @param mcastAddr - the multicast address that the IGMP agreed to use
+     * @throws IOException
+     */
     void forwardFromHostToMcast(String mcastAddr) throws IOException {
 
         group = InetAddress.getByName(mcastAddr);
@@ -178,9 +201,10 @@ public class Client extends JFrame implements ActionListener {
     }
 
 
-
-    //purpose of this function is to update the display whenever the receive video function has received enough frames
-
+   /**
+    * purpose of this function is to update the display whenever the receive video function
+    * has received enough frames
+    */
     void updateDisplay() {
 
 
@@ -234,15 +258,14 @@ public class Client extends JFrame implements ActionListener {
         }
     }
 
-    /*
 
-    purpose of this function is to continuously listen for datagram packets, and whenever we receive a packet,
-    we add it to the queue if it is a new image, or we update the image by adding the appropriate bytes.
-
-    when we receive a new image, we tell the updateDisplay() method to update the image being displayed
-     */
-
-
+    /**
+     * purpose of this function is to continuously listen for datagram packets, and whenever we receive a packet,
+     * we add it to the queue if it is a new image, or we update the image by adding the appropriate bytes.
+     *
+     * when we receive a new image, we tell the updateDisplay() method to update the image being displayed
+     * @throws IOException
+    */
     void receiveVideo() throws IOException {
 
          /*
@@ -362,8 +385,10 @@ public class Client extends JFrame implements ActionListener {
     }
 
 
-
-    //Triggered when the user hits the connect button
+    /**
+     * Triggered when the user hits the connect button
+     * @param e - how the interrupt from the client is detected
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         //when the connect button is pressed
