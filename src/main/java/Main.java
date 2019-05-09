@@ -28,6 +28,10 @@ public class Main extends JFrame {
         serverOptions.setBorder(blackLine);
 
         JButton clientButton = new JButton("Launch Client");
+
+        /**
+         * Launch client gui on button press
+         */
         clientButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -104,9 +108,9 @@ public class Main extends JFrame {
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 
-
-
-
+        /**
+         * launch server on button press
+         */
         serverButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -156,6 +160,11 @@ public class Main extends JFrame {
 
     }
 
+
+    /**
+     * Print external ip to
+     * @return  the device running this programs external IP address
+     */
 
     public static String printExternalIP()  {
         String systemipaddress;
