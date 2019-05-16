@@ -1,7 +1,5 @@
 package Misc;
 
-import java.awt.image.BufferedImage;
-
 public class Constants {
     public static final String IP_MULTICAST = "230.12.123.4";
     public static final int UNICAST_PORT = 2709;

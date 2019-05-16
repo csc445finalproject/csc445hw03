@@ -9,10 +9,9 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.SocketException;
-import java.net.URL;
-import java.net.UnknownHostException;
 
 
 public class Main extends JFrame {
@@ -166,17 +165,34 @@ public class Main extends JFrame {
      * @return  the device running this programs external IP address
      */
 
-    public static String printExternalIP()  {
-        String systemipaddress;
-        try {
-            URL url_name = new URL("http://bot.whatismyipaddress.com");
-            BufferedReader sc = new BufferedReader(new InputStreamReader(url_name.openStream()));
-            systemipaddress = sc.readLine().trim();
-        } catch (Exception e) {
-            systemipaddress = "Cannot Execute Properly";
+    public static String printExternalIP() throws IOException {
+        ProcessBuilder builder = new ProcessBuilder("ifconfig");
+        builder.redirectErrorStream(true);
+        Process process = builder.start();
+        InputStream is = process.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            String [] content = line.split(" ");
+
+            if (content[0].contains("inet") && !content[0].contains("6") && !line.contains("127.0.0.1")) {
+
+                if (content[1].contains("addr")) {
+                    String ip = content[1].split(":")[1];
+                    System.out.println(ip);
+                    return ip;
+                } else {
+                    String ip = line.split(" ")[1];
+                    System.out.println(ip);
+                    return ip;
+                }
+
+            }
         }
-        System.out.println("Public IP Address: " + systemipaddress);
-        return systemipaddress;
+
+        return "IP N/A";
     }
 
 
